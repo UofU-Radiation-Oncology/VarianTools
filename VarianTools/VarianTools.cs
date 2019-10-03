@@ -10,7 +10,7 @@ using VMS.TPS.Common.Model.Types;
 namespace VarianTools
 {
 
-  public static class Eclipse
+  public static partial class Eclipse
   {
     
     /// <summary>
@@ -56,79 +56,10 @@ namespace VarianTools
         }
     }
 
-    /// <summary>
-    /// returns structure set for PlanningItem plan
-    /// </summary>
-    /// <param name="plan"></param>
-    /// <returns></returns>
-    public static StructureSet GetStructureSet(PlanningItem pitem)
-    {
-        StructureSet structures = null; 
-
-        // Get Structure set
-        try
-        {
-            structures = ((PlanSetup)pitem).StructureSet;
-
-        }
-        catch
-        {
-            structures = ((PlanSum)pitem).StructureSet;
-
-        }
-        return structures;
-
-    }
-
-    public static Structure GetStructure(StructureSet ss, string query)
-    {
-      foreach(var s in ss.Structures)
-      {
-        if (s.Id == query)
-          return s;
-      }
-
-      return null;
-    }
-
-    public static Nullable<int> GetStructureIndex(StructureSet ss, string query)
-    {
-      for(int i = 0; i < StructureCount(ss); i++)
-      {
-        if (ss.Structures.ElementAt(i).Id == query)
-          return i;
-      }
-
-      return null;
-    }
-
-    public static int StructureCount(StructureSet ss)
-    {
-      int count = 0;
-      foreach (var s in ss.Structures)
-      {
-        count++;
-      }
-      return count;
-    }
+    
+    // ---- Structure Related Functions ---------------------//
 
 
-    /// <summary>
-    /// Presents a dialgoue for selecting a structure from a list of structures
-    /// </summary>
-    /// <param name="ss">structure set</param>
-    /// <returns>selected structure object</returns>
-    public static Structure StructureSelectDialogue(StructureSet ss)
-    {
-      StructureSelectorForm ssf = new StructureSelectorForm(ss);
-      if (ssf.ShowDialog() == DialogResult.OK)
-      {
-        //ssf.StructureComboBox.Text
-        return GetStructure(ss, ssf.StructureComboBox.Text);
-      }
-      else
-        return null;
-    }
         
     
 
