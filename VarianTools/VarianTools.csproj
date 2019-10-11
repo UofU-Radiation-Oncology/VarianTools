@@ -57,9 +57,16 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Program Files (x86)\Varian\RTM\15.5\esapi\API\VMS.TPS.Common.Model.Types.dll</HintPath>
     </Reference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Structures.cs" />
+    <Compile Include="ContourRotation.cs">
+      <DependentUpon>Structures.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Meshes.cs">
+      <DependentUpon>Structures.cs</DependentUpon>
+    </Compile>
     <Compile Include="PlanSelectorForm.cs">
       <SubType>Form</SubType>
     </Compile>

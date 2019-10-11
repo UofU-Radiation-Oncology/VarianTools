@@ -56,12 +56,29 @@ namespace VarianTools
         }
     }
 
-    
-    // ---- Structure Related Functions ---------------------//
 
 
-        
-    
+
+
+
+
+
+  }
+
+  public static partial class General
+  {
+    public static void WriteLinesToFile(string path, List<string> lines)
+    {
+
+      using (System.IO.StreamWriter file = new System.IO.StreamWriter(path)) //@"C:\Users\Public\TestFolder\WriteLines2.txt"))
+      {
+        foreach (string line in lines)
+        {
+          file.WriteLine(line);
+        }
+      }
 
     }
+
+  }
 }
