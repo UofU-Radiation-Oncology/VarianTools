@@ -74,14 +74,14 @@ namespace VarianTools
     {
       // copy triangle data
       for (int i = 0; i < m.TriangleIndices.Count / 3; i++)
-        Triangle.Add(new MeshTriangle(m.TriangleIndices[i * 3], m.TriangleIndices[i * 3 + 1], m.TriangleIndices[(i * 3) + 2]));
+        Triangles.Add(new MeshTriangle(m.TriangleIndices[i * 3], m.TriangleIndices[i * 3 + 1], m.TriangleIndices[(i * 3) + 2]));
 
       // copy point data
       for (int i = 0; i < m.Positions.Count; i++)
         Points.Add(m.Positions[i]);
     }
 
-    public List<MeshTriangle> Triangle;
+    public List<MeshTriangle> Triangles;
     public List<Point3D> Points;
 
     /// <summary>
@@ -92,15 +92,15 @@ namespace VarianTools
     /// <returns></returns>
     public int TriangleSharingEdge(int ti, int ei)
     {
-      var e = Triangle[ti].Edge(ei);
+      var e = Triangles[ti].Edge(ei);
 
-      for (int i = 0; i < Triangle.Count; i++)
+      for (int i = 0; i < Triangles.Count; i++)
       {
         if (i != ti)
         {
           for (int j = 0; j < 3; j++)
           {
-            var ej = Triangle[i].Edge(j);
+            var ej = Triangles[i].Edge(j);
             if (EdgesMatch(e, ej))
               return i;
           }
@@ -131,14 +131,14 @@ namespace VarianTools
   {
     public MeshTriangle(int a, int b, int c)
     {
-      EdgePoints = new List<int>(); // indices of points that make up the triangle
+      Points = new List<int>(); // indices of points that make up the triangle
 
-      EdgePoints.Add(a);
-      EdgePoints.Add(b);
-      EdgePoints.Add(c);
+      Points.Add(a);
+      Points.Add(b);
+      Points.Add(c);
     }
 
-    public List<int> EdgePoints;
+    public List<int> Points;
 
     /// <summary>
     /// return indices of points that correspond to a given edge  
@@ -149,12 +149,12 @@ namespace VarianTools
     {
 
       List<int> edge = new List<int>();
-      edge.Add(EdgePoints[i]);
+      edge.Add(Points[i]);
      
       if (i < 2)
-        edge.Add(EdgePoints[i+1]);
+        edge.Add(Points[i+1]);
       else
-        edge.Add(EdgePoints[0]);
+        edge.Add(Points[0]);
 
       return edge;
 

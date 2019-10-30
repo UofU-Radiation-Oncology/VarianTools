@@ -56,7 +56,14 @@ namespace VarianTools
         }
     }
 
+    public static PlanSetup GetPlan(Course c, string planId)
+    {
+      foreach (var plan in c.PlanSetups)
+        if (plan.Id == planId)
+          return plan;
 
+      return null;
+    }
 
 
 
