@@ -36,7 +36,7 @@
   <ItemGroup>
     <Reference Include="EulerRotation, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Libraries\EulerRotation.dll</HintPath>
+      <HintPath>O:\Software\Libraries\EulerRotation.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
@@ -61,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DVH.cs" />
+    <Compile Include="Images.cs" />
     <Compile Include="Structures.cs" />
     <Compile Include="ContourRotation.cs">
       <DependentUpon>Structures.cs</DependentUpon>

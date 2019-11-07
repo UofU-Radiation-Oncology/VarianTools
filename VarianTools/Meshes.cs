@@ -4,7 +4,7 @@ using VMS.TPS.Common.Model.API;
 using VMS.TPS.Common.Model.Types;
 using Euler;
 using System.Windows.Media.Media3D;
-
+using System.Windows.Forms;
 
 namespace VarianTools
 {
@@ -68,6 +68,10 @@ namespace VarianTools
       */
   }
 
+  /// <summary>
+  /// Container class for MeshGeometry 3D that adds a methods and attributes for rotating meshes and extracting contours. 
+  /// 
+  /// </summary>
   public class XMesh
   {
     public XMesh(MeshGeometry3D m)
@@ -82,8 +86,8 @@ namespace VarianTools
     }
 
     public List<MeshTriangle> Triangles;
-    public List<Point3D> Points;
-
+    public List<Point3D> Points; 
+    
     /// <summary>
     /// returns index of triangle that shares an edge with egde ei of Triangle ti else it returns ti
     /// </summary>
@@ -123,12 +127,73 @@ namespace VarianTools
 
     }
 
+    /// <summary>
+    /// return index of first triangle encountered to interesect plane defined by z 
+    /// returns count if one is not found
+    /// </summary>
+    /// <param name="z"></param>
+    /// <returns></returns>
+    public int FirstTriangleToIntersectPlane(double z)
+    {
+      int count = Triangles.Count;
+      for (int ti = 0; ti < count; ti++)
+      { 
+        if (TriangleIntersectsPlane(ti, z))
+          return ti;
+      }
+      return count;
+    }
 
+    public bool TriangleIntersectsPlane(int ti, double z)
+    {
+      for (int i = 0; i < 3; i++)
+      {
+        if (EdgeContainsZ(Triangles[ti].Edge(i), z))
+          return true;
+      }
+      return false;
+    }
 
-  }
+    public bool EdgeContainsZ(List<int> edge, double z)
+    {
+      // WHAT IF LINE RUNS ALONG EDGE???
+
+      if (edge.Count == 2)
+      {
+        double az = Points[edge[0]].Z;
+        double bz = Points[edge[1]].Z;
+
+        if (az > bz)
+        {
+          if (z < az && z > bz)
+            return true;
+        }
+        else if (bz > az)
+        {
+          if (z < bz && z > az)
+            return true;
+        }
+        else if (az == bz && z == az)
+        {
+          MessageBox.Show("Warning plane is coincident with mesh edge\n Algorithms dependent on edge intersections may be ill behaved");
+        }
+      }
+
+      return false; 
+    }
+  
+  
+  } // end of XMesh class
 
   public class MeshTriangle
   {
+   /// <summary>
+   /// constructor for MeshTriangle class.  Principle feature of the class is a list of integtegers that represent indicies for different points that make up the triangle 
+   /// and that are members of the XMesh Points list. 
+   /// </summary>
+   /// <param name="a"></param>
+   /// <param name="b"></param>
+   /// <param name="c"></param>
     public MeshTriangle(int a, int b, int c)
     {
       Points = new List<int>(); // indices of points that make up the triangle
@@ -141,29 +206,29 @@ namespace VarianTools
     public List<int> Points;
 
     /// <summary>
-    /// return indices of points that correspond to a given edge  
+    /// return indices of points that correspond to a given edge (0,1, or 2) 
     /// </summary>
     /// <param name="TriangleIndex"></param>
     /// <returns></returns>
     public List<int> Edge(int i)
     {
-
       List<int> edge = new List<int>();
-      edge.Add(Points[i]);
-     
-      if (i < 2)
-        edge.Add(Points[i+1]);
-      else
-        edge.Add(Points[0]);
+      if (i < 3)
+      {
+        edge.Add(Points[i]);
 
+        if (i < 2)
+          edge.Add(Points[i + 1]);
+        else
+          edge.Add(Points[0]);
+      }
+      else 
+        throw new ArgumentException("Edge index out of range (0, 1, or 2)", "i: " + i.ToString());
       return edge;
-
     }
 
 
 
-    
 
   }
-
 }
