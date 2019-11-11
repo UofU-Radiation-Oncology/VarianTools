@@ -69,6 +69,20 @@
     <Compile Include="Meshes.cs">
       <DependentUpon>Structures.cs</DependentUpon>
     </Compile>
+    <Compile Include="XMesh.cs">
+      <DependentUpon>Meshes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MarchingCubes.cs">
+      <DependentUpon>XMesh.cs</DependentUpon>
+    </Compile>
+
+    <Compile Include="MarchingCubeUtil.cs">
+      <DependentUpon>XMesh.cs</DependentUpon>
+    </Compile>
+
+    <Compile Include="MeshTriangle.cs">
+      <DependentUpon>XMesh.cs</DependentUpon>
+    </Compile>
     <Compile Include="PlanSelectorForm.cs">
       <SubType>Form</SubType>
     </Compile>

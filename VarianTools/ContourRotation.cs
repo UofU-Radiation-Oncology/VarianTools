@@ -116,32 +116,7 @@ namespace VarianTools
       return new VVector(ep.x, ep.y, ep.z);
     }
 
-    public static double ImgPlaneToZDicom(Image img, int ip)
-    {
-      double z = (img.ZDirection.z * img.Origin.z) + ((double)ip * img.ZRes);
 
-      /*
-      string msg = "";
-      msg += "dicom origin z: " + img.Origin.z.ToString();
-      msg += "\nz resolution:   " + img.ZRes.ToString();
-      msg += "\nZDirection.x:   " + img.ZDirection.x.ToString();
-      msg += "\nZDirection.y:   " + img.ZDirection.y.ToString();
-      msg += "\nZDirection.z:   " + img.ZDirection.z.ToString();
-      msg += "\n\nimage plane: " + ip.ToString();
-      msg += "\nZ: " + z.ToString();
-      
-      MessageBox.Show(msg);
-      */
-      return z;
-
-    }
-
-    public static int ZDicomToImgPlane(Image img, double Zdicom)
-    {
-      // Need to consider how to handle partial volume effects
-      double ip = (Zdicom - (img.ZDirection.z * img.Origin.z)) / img.ZRes;
-      return (int)ip;
-    }
 
   }
 
