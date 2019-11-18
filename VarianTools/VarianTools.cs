@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using VMS.TPS.Common.Model.API;
 using VMS.TPS.Common.Model.Types;
+using System.Xml;
+using System.Xml.Serialization;
+using System.IO;
 
 namespace VarianTools
 {
@@ -85,6 +88,95 @@ namespace VarianTools
         }
       }
 
+    }
+
+    /// <summary>
+    /// Deserializes an xml file into an object list
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="fileName"></param>
+    /// <returns></returns>
+    public static T LoadObject<T>(string fileName)
+    {
+      //MessageBox.Show(fileName);
+      if (string.IsNullOrEmpty(fileName)) { return default(T); }
+
+      T objectOut = default(T);
+
+      try
+      {
+        XmlDocument xmlDocument = new XmlDocument();
+        xmlDocument.Load(fileName);
+        string xmlString = xmlDocument.OuterXml;
+
+        using (StringReader read = new StringReader(xmlString))
+        {
+          Type outType = typeof(T);
+
+          XmlSerializer serializer = new XmlSerializer(outType);
+          using (XmlReader reader = new XmlTextReader(read))
+          {
+            objectOut = (T)serializer.Deserialize(reader);
+            reader.Close();
+          }
+
+          read.Close();
+        }
+      }
+      catch
+      {
+        MessageBox.Show("Error Loading Object");
+      }
+
+      return objectOut;
+    }
+
+    /// <summary>
+    /// Serializes an object.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="serializableObject"></param>
+    /// <param name="fileName"></param>
+    public static void SaveObject<T>(T serializableObject, string fileName)
+    {
+
+      if (serializableObject == null)
+      {
+
+        return;
+      }
+
+      try
+      {
+        XmlDocument xmlDocument = new XmlDocument();
+        XmlSerializer serializer = new XmlSerializer(serializableObject.GetType());
+        using (MemoryStream stream = new MemoryStream())
+        {
+          serializer.Serialize(stream, serializableObject);
+          stream.Position = 0;
+          xmlDocument.Load(stream);
+          xmlDocument.Save(fileName);
+          stream.Close();
+        }
+      }
+      catch (Exception ex)
+      {
+        //Log exception here
+        MessageBox.Show("An error occured while trying to save to: " + fileName);
+      }
+    }
+
+    public static string AppendConstrianedString(string orig, string append, EclipseStringType type)
+    {
+      int allowed_length = (int)type;
+      int n = orig.Length + append.Length - allowed_length;
+      orig.Remove(orig.Length - n, n);
+      return orig + append;
+    }
+
+    public enum EclipseStringType
+    {
+      StructureId = 16
     }
 
   }

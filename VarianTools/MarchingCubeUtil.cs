@@ -14,14 +14,15 @@ namespace VarianTools
     {
 
 
-      public bool EdgeIntersectsPlane(int ti, double z)
+      public IntersectState EdgeIntersectsPlane(int ti, double z)
       {
         for (int i = 0; i < 3; i++)
         {
-          if (EdgeContainsZ(Triangles[ti].Edge(i), z))
-            return true;
+          var r = EdgeIntersectedByZ(Triangles[ti].Edge(i), z);
+          if (r==IntersectState.Bisects || r == IntersectState.Coincident)
+            return r;
         }
-        return false;
+        return IntersectState.NoIntersection;
       }
 
       /// <summary>
@@ -30,10 +31,8 @@ namespace VarianTools
       /// <param name="ti"></param>
       /// <param name="ei"></param>
       /// <returns></returns>
-      public int TriangleSharingEdge(int ti, int ei)
+      public int TriangleSharingEdge(int ti, List<int> e)
       {
-        var e = Triangles[ti].Edge(ei);
-
         for (int i = 0; i < Triangles.Count; i++)
         {
           if (i != ti)
@@ -74,7 +73,8 @@ namespace VarianTools
         int count = Triangles.Count;
         for (int ti = 0; ti < count; ti++)
         {
-          if (TriangleIntersectsPlane(ti, z))
+          var r = TriangleIntersectsPlane(ti, z);
+          if (r == IntersectState.Coincident || r == IntersectState.Bisects)
             return ti;
         }
         return count;
@@ -88,30 +88,70 @@ namespace VarianTools
       /// <returns></returns>
       public List<int> FirstEdgeToIntersectPlane(int ti, double z)
       {
-        if (EdgeContainsZ(Triangles[ti].Edge(0), z))
-          return Triangles[ti].Edge(0);
+        try
+        {
+          //string msg = "Checking triangle: " + ti.ToString();
+          //msg += "  Edge 0   for intersection with z: " + z.ToString();
+          //MessageBox.Show(msg, "FirstEdgeToIntersectPlane", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-        else if (EdgeContainsZ(Triangles[ti].Edge(1), z))
-          return Triangles[ti].Edge(1);
+          List<int> edges = new List<int>(){ 0, 1, 2 };
 
-        else if (EdgeContainsZ(Triangles[ti].Edge(2), z))
-          return Triangles[ti].Edge(2);
-
-        else
-          return null;
+          foreach (var e in edges)
+          {
+            var r = EdgeIntersectedByZ(Triangles[ti].Edge(e), z);
+            if (r == IntersectState.Bisects || r == IntersectState.Coincident)
+              return Triangles[ti].Edge(e);
+          }
+        }
+        catch
+        {
+          MessageBox.Show("Error finding first edge to intersect plane\nTriangle: " + ti.ToString() + "\nZ: ");
+        }
+          
+            
+        return null;
+        
       }
 
-      public bool TriangleIntersectsPlane(int ti, double z)
+      /// <summary>
+      /// returns the second edge to instersect the plane defined by z for triangle ti and first edge e1  
+      /// if plane is coincident with first edge returns null
+      /// </summary>
+      /// <param name="ti"></param>
+      /// <param name="e1"></param>
+      /// <param name="z"></param>
+      /// <returns></returns>
+      public List<int> SecondEdgeToIntersectPlane(int ti, List<int> e1, double z)
+      {
+
+        for (int e = 0; e < 3; e++)
+        {
+          var edge = Triangles[ti].Edge(e);
+          if (!EdgesMatch(e1, edge))
+          {
+            var r = EdgeIntersectedByZ(edge, z);
+            if (r == IntersectState.Bisects)
+              return edge;
+          }
+        }
+        
+        return null;
+      
+      }
+
+
+      public IntersectState TriangleIntersectsPlane(int ti, double z)
       {
         for (int i = 0; i < 3; i++)
         {
-          if (EdgeContainsZ(Triangles[ti].Edge(i), z))
-            return true;
+          var result = EdgeIntersectedByZ(Triangles[ti].Edge(i), z);
+          if (result == IntersectState.Bisects || result == IntersectState.Coincident)
+            return result;
         }
-        return false;
+        return IntersectState.NoIntersection;
       }
 
-      public bool EdgeContainsZ(List<int> edge, double z)
+      public IntersectState EdgeIntersectedByZ(List<int> edge, double z)
       {
         // WHAT IF LINE RUNS ALONG EDGE???
 
@@ -123,20 +163,29 @@ namespace VarianTools
           if (az > bz)
           {
             if (z < az && z > bz)
-              return true;
+              return IntersectState.Bisects;
           }
           else if (bz > az)
           {
             if (z < bz && z > az)
-              return true;
+              return IntersectState.Bisects;
           }
           else if (az == bz && z == az)
           {
-            MessageBox.Show("Warning plane is coincident with mesh edge\n Algorithms dependent on edge intersections may be ill behaved");
+            return IntersectState.Coincident;
+            
+            /*string msg = "Warning:\npublic bool EdgeIntersectedByZ(List<int> edge, double z)\n";
+            msg += "\nz: " + z.ToString();
+            msg += "\nv1 z: " + az.ToString();
+            msg += "\nv2 z: " + bz.ToString();
+
+            msg += "\n\nPlane is coincident with mesh edge - algorithms dependent on edge intersections may be ill behaved";
+            MessageBox.Show(msg,"Warning",MessageBoxButtons.OK,MessageBoxIcon.Warning);*/
+
           }
         }
 
-        return false;
+        return IntersectState.NoIntersection;
       }
 
       /// <summary>
@@ -166,5 +215,16 @@ namespace VarianTools
 
 
     }
+
+    public enum IntersectState
+    { 
+      NoIntersection,
+      Bisects,
+      Coincident
+    }
+  
+  
   }
+
+
 }

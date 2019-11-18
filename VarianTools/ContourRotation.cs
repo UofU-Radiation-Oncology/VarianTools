@@ -96,7 +96,7 @@ namespace VarianTools
       for (int i = 0; i < img.ZSize; i++)
       {
         s.ClearAllContoursOnImagePlane(i);
-        double imgz = ImgPlaneToZDicom(img, i);
+        double imgz = Images.ImgPlaneToZDicom(img, i);
         double range = img.ZRes;
         VVector[] contour = cvol.ContourOnImage(imgz, range);
         if (contour.Length > 0)
@@ -105,6 +105,14 @@ namespace VarianTools
 
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="p"></param>
+    /// <param name="adeg"></param>
+    /// <param name="bdeg"></param>
+    /// <param name="gdeg"></param>
+    /// <returns></returns>
     public static VVector RotatePoint(VVector p, double adeg, double bdeg, double gdeg)
     {
       double alpha = adeg * Math.PI / 180.0;
@@ -116,7 +124,7 @@ namespace VarianTools
       return new VVector(ep.x, ep.y, ep.z);
     }
 
-
+    
 
   }
 

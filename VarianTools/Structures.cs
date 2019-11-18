@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using VMS.TPS.Common.Model.API;
+using Euler;
 
 namespace VarianTools
 {
@@ -97,6 +99,88 @@ namespace VarianTools
 
     }
 
+   
+    public static void StructureFromXmesh(Image img, XMesh xm, Structure s)
+    {
+
+            
+      // TASK: NEED TO VERIFY HOW TO BEST HANDLE PARTIAL VOLUME EFFECTS WITH ZDICOMTOIMGPLANE ETC.
+      
+      // Get max and min z 
+      var maxZ = xm.Points.Max(p => p.Z);
+      var minZ = xm.Points.Min(p => p.Z);
+      var maxIndex = Images.ZDicomToImgPlane(img, maxZ);
+      var minIndex = Images.ZDicomToImgPlane(img, minZ);
+
+      /*
+      string msg = "";
+
+      msg += "Image origin: " + img.Origin.z.ToString();
+      msg += "\nZres: " + img.ZRes.ToString();
+      msg += "\nmaxZ: " + maxZ.ToString();
+      msg += "\nminZ: " + minZ.ToString();
+      msg += "\nmaxIndex: " + maxIndex.ToString();
+      msg += "\nminIndex: " + minIndex.ToString();
+      
+      MessageBox.Show(msg);
+      */
+
+      for (int i = minIndex; i <= maxIndex; i++)
+      {
+        double z = Images.ImgPlaneToZDicom(img, i);
+        s.AddContourOnImagePlane(xm.MarchingCubeAlgorithm(z),i);
+      }
+      
+
+
+    }
+
+
+    public static void GenerateRotationalEnvelope(StructureSet ss, string sID)
+    {
+      // Get original structure s0
+      var s0 = ss.Structures.First(s => s.Id == sID);
+
+      // Create copy of s0 and assign to sPre
+      var sPre = ss.AddStructure("CONTROL", "GRETEMPsPre");
+      sPre.SegmentVolume = s0.Margin(0.0);
+
+      // Get list of Euler angles
+      string convention = "XY'Z";
+      List<EulerAngles> Angles = new List<EulerAngles>();
+      Angles.Add(new EulerAngles(convention, 1 / 180 * Math.PI, 2 / 180 * Math.PI, 3 / 180 * Math.PI));
+      //List<Euler.EulerAngles> Angles = Euler.RelatedFunctions.RandomRotationsWithBounds(convention, 1, 1, 1, 2);
+
+      foreach (var ea in Angles)
+      {
+
+        // Get Original Mesh
+        var sXm = new Structures.XMesh(s0.MeshGeometry);
+
+        // Rotate Mesh 
+        sXm.RotateMeshPoints(ea);
+
+        // Get rotated structure (sRot) from mesh
+        string rsId = "GRETEMPsRot";
+        //StructureFromXmesh(sXm, rsId);
+        var sRot = GetStructure(ss, rsId);
+
+        // Add sRot to sPre
+        var sPst = ss.AddStructure("CONTROL", "GRETEMPsPst");
+        sPst.SegmentVolume = sPre.Or(sRot);
+
+        // Remove sRot and SPre
+        ss.RemoveStructure(sRot);
+        ss.RemoveStructure(sPre);
+
+        // Set sPre to sPst and remove sPst
+        sPre = ss.AddStructure("CONTROL", "GRETEMPsPre");
+        sPre.SegmentVolume = sPst.SegmentVolume;
+
+        // Remove sPst
+        ss.RemoveStructure(sPst);
+      }
+    }
   }
 
 }
