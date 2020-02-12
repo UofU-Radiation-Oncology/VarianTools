@@ -9,6 +9,7 @@ using VMS.TPS.Common.Model.Types;
 using System.Xml;
 using System.Xml.Serialization;
 using System.IO;
+using System.Windows.Media.Media3D;
 
 namespace VarianTools
 {
@@ -174,6 +175,55 @@ namespace VarianTools
       return orig + append;
     }
 
+    public static VVector Point3dToVVector(Point3D p)
+    {
+      VVector vvp = new VVector();
+      vvp.x = p.X;
+      vvp.y = p.Y;
+      vvp.z = p.Z;
+
+      return vvp;
+    }
+
+    public static Point3D VVectorToPoint3D(VVector vv)
+    {
+      Point3D p3d = new Point3D();
+      p3d.X = vv.x;
+      p3d.Y = vv.y;
+      p3d.Z = vv.z;
+
+      return p3d;
+    }
+
+    public static string VVectorMessage(VVector p)
+    {
+      string msg = "";
+      msg += "x: " + p.x.ToString();
+      msg += "\ny: " + p.y.ToString();
+      msg += "\nz: " + p.z.ToString();
+      return msg;
+    }
+
+    public static bool VVectorEqual(VVector a, VVector b)
+    {
+      bool x = DoubleEqual(a.x, b.x);
+      bool y = DoubleEqual(a.y, b.y);
+      bool z = DoubleEqual(a.z, b.z);
+      if (x && y && z)
+        return true;
+      else
+        return false;
+    }
+
+    public static bool DoubleEqual(double a, double b)
+    {
+        double epsilon = 0.000001;
+        double d = Math.Abs(a - b);
+        if (d < epsilon)
+          return true;
+        else
+          return false;
+    }
     public enum EclipseStringType
     {
       StructureId = 16

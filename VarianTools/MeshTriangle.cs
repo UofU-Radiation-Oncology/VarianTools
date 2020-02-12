@@ -21,14 +21,14 @@ namespace VarianTools
       /// <param name="c"></param>
       public MeshTriangle(int a, int b, int c)
       {
-        Points = new List<int>(); // indices of points that make up the triangle
+        PointIndices = new List<int>(); // indices of points that make up the triangle
 
-        Points.Add(a);
-        Points.Add(b);
-        Points.Add(c);
+        PointIndices.Add(a);
+        PointIndices.Add(b);
+        PointIndices.Add(c);
       }
 
-      public List<int> Points;
+      public List<int> PointIndices;
 
       /// <summary>
       /// return indices of points that correspond to a given edge (0,1, or 2) 
@@ -40,12 +40,12 @@ namespace VarianTools
         List<int> edge = new List<int>();
         if (i < 3)
         {
-          edge.Add(Points[i]);
+          edge.Add(PointIndices[i]);
 
           if (i < 2)
-            edge.Add(Points[i + 1]);
+            edge.Add(PointIndices[i + 1]);
           else
-            edge.Add(Points[0]);
+            edge.Add(PointIndices[0]);
         }
         else
           throw new ArgumentException("Edge index out of range (0, 1, or 2)", "i: " + i.ToString());

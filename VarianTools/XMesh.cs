@@ -20,7 +20,7 @@ namespace VarianTools
       public XMesh(MeshGeometry3D m)
       {
         Triangles = new List<MeshTriangle>();
-        Points = new List<Point3D>();
+        Points = new List<VVector>();
 
         // copy triangle data
         for (int i = 0; i < m.TriangleIndices.Count / 3; i++)
@@ -29,42 +29,48 @@ namespace VarianTools
         }
         // copy point data
         for (int i = 0; i < m.Positions.Count; i++)
-          Points.Add(m.Positions[i]);
+          Points.Add(General.Point3dToVVector(m.Positions[i]));
       }
 
       public List<MeshTriangle> Triangles; // list of MeshTriangles objects which each contain three indices of points contained in Points list
-      public List<Point3D> Points;
+      public List<VVector> Points;
 
 
       public double MeshVolume()
       {
         //https://stackoverflow.com/questions/16460897/calculate-the-volume-of-a-geometrymodel3d
 
-        Point3D v1 = new Point3D();
-        Point3D v2 = new Point3D();
-        Point3D v3 = new Point3D();
+        VVector v1 = new VVector();
+        VVector v2 = new VVector();
+        VVector v3 = new VVector();
         double volume = 0.0;
 
         // foreach triangle 
         for (int i = 0; i < Triangles.Count; i++)
         {
-          v1 = Points[Triangles[i].Points[0]];
-          v2 = Points[Triangles[i].Points[1]];
-          v3 = Points[Triangles[i].Points[2]];
+          v1 = Points[Triangles[i].PointIndices[0]];
+          v2 = Points[Triangles[i].PointIndices[1]];
+          v3 = Points[Triangles[i].PointIndices[2]];
           
-          volume += (((v2.Y - v1.Y) * (v3.Z - v1.Z) - (v2.Z - v1.Z) * (v3.Y - v1.Y)) * (v1.X + v2.X + v3.X)) / 6;
+          volume += (((v2.y - v1.y) * (v3.z - v1.z) - (v2.z - v1.z) * (v3.y - v1.y)) * (v1.x + v2.x + v3.x)) / 6;
         }
 
         return volume;
       }
 
-      public void RotatePointsToMaximizeVolume(double adeg, double bdeg, double gdeg)
+      public List<VVector> GetTrianglePoints(int ti)
+      {
+        List<VVector> plist = new List<VVector>();
+        foreach (var pi in Triangles[ti].PointIndices)
+          plist.Add(Points[pi]);
+        return plist;
+      }
+      /*public void RotatePointsToMaximizeVolume(double adeg, double bdeg, double gdeg)
       {
         for (int i = 0; i < Points.Count; i++)
           RotatePointToMaximizeVolume(i, adeg, bdeg, gdeg);
-      }
-
-      public void RotatePointToMaximizeVolume(int pi, double adeg, double bdeg, double gdeg)
+      }*/
+      /*public void RotatePointToMaximizeVolume(int pi, double adeg, double bdeg, double gdeg)
       {
 
         //? does the maximum angular deviation result in the maximum volume increase 
@@ -75,7 +81,7 @@ namespace VarianTools
         foreach (var d in dir)
         {
           // Get original point and volume
-          Point3D p0 = Points[pi];
+          VVector p0 = Points[pi];
           double v0 = MeshVolume();
 
           // Rotate Point
@@ -87,7 +93,17 @@ namespace VarianTools
           if (vprime < v0)
             Points[pi] = p0;
         }
-      }
+      }*/
+      /*public VVector RotateMeshPoint(VVector p, double adeg, double bdeg, double gdeg)
+{
+  double alpha = adeg * Math.PI / 180.0; // convert to radians
+  double beta = bdeg * Math.PI / 180.0;  // convert to radians
+  double gamma = gdeg * Math.PI / 180.0; // convert to radians
+
+  EulerAngles ea = new EulerAngles("XY'Z", alpha, beta, gamma); //specifies the angles and the convention for rotation
+  var ep = Rotation.RotatePoint(new EulerPoint(p.x, p.y, p.z), ea);
+  return new VVector(ep.x, ep.y, ep.z);
+}*/
 
       public void RotateMeshPoints(EulerAngles ea)
       {
@@ -100,25 +116,31 @@ namespace VarianTools
 
         for (int i = 0; i < Points.Count; i++)
         {
-          Point3D p = Points[i];
-          var ep = Rotation.RotatePoint(new EulerPoint(p.X, p.Y, p.Z), ea);
-          Points[i] = new Point3D(ep.x, ep.y, ep.z);
+          VVector p = Points[i];
+          var ep = Rotation.RotatePoint(new EulerPoint(p.x, p.y, p.z), ea);
+          Points[i] = new VVector(ep.x, ep.y, ep.z);
         }
 
       }
 
 
-      public Point3D RotateMeshPoint(Point3D p, double adeg, double bdeg, double gdeg)
+      /// <summary>
+      /// Shifts coordinate system origin of XMesh points to point p
+      /// </summary>
+      /// <param name="p"></param>
+      public void RebaseMeshPoints(VVector p)
       {
-        double alpha = adeg * Math.PI / 180.0; // convert to radians
-        double beta = bdeg * Math.PI / 180.0;  // convert to radians
-        double gamma = gdeg * Math.PI / 180.0; // convert to radians
-
-        EulerAngles ea = new EulerAngles("XY'Z", alpha, beta, gamma); //specifies the angles and the convention for rotation
-        var ep = Rotation.RotatePoint(new EulerPoint(p.X, p.Y, p.Z), ea);
-        return new Point3D(ep.x, ep.y, ep.z);
+        for (int i = 0; i < Points.Count; i++)
+        {
+          VVector rp = new VVector();
+          rp.x = Points[i].x - p.x;
+          rp.y = Points[i].y - p.y;
+          rp.z = Points[i].z - p.z;
+          Points[i] = rp;
+        }
       }
-      
+
+
     } // end of XMesh class
 
   }

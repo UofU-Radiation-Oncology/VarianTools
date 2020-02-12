@@ -23,6 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -73,6 +74,9 @@
       <DependentUpon>Meshes.cs</DependentUpon>
     </Compile>
     <Compile Include="MarchingCubes.cs">
+      <DependentUpon>XMesh.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MarchingCubesUtilities.cs">
       <DependentUpon>XMesh.cs</DependentUpon>
     </Compile>
     <Compile Include="MarchingCubeUtil.cs">

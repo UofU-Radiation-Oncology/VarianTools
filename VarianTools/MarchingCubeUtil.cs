@@ -6,6 +6,7 @@ using Euler;
 using System.Windows.Media.Media3D;
 using System.Windows.Forms;
 
+
 namespace VarianTools
 {
   public static partial class Structures
@@ -13,18 +14,17 @@ namespace VarianTools
     public partial class XMesh
     {
 
-
-      public IntersectState EdgeIntersectsPlane(int ti, double z)
+      // These functions are related to the first iteration of the algorithm (Edge Search) Likely can be deleted. 
+      public EdgeIntersection EdgeIntersectsPlane(int ti, double z)
       {
         for (int i = 0; i < 3; i++)
         {
           var r = EdgeIntersectedByZ(Triangles[ti].Edge(i), z);
-          if (r==IntersectState.Bisects || r == IntersectState.Coincident)
+          if (r==EdgeIntersection.Bisects || r == EdgeIntersection.Coincident)
             return r;
         }
-        return IntersectState.NoIntersection;
+        return EdgeIntersection.NoIntersection;
       }
-
       /// <summary>
       /// returns index of triangle that shares an edge with egde ei of Triangle ti else it returns ti
       /// </summary>
@@ -48,7 +48,6 @@ namespace VarianTools
 
         return ti;
       }
-
       public bool EdgesMatch(List<int> e1, List<int> e2)
       {
         int m = 0;
@@ -61,7 +60,6 @@ namespace VarianTools
           return false;
 
       }
-
       /// <summary>
       /// return index of first triangle encountered to interesect plane defined by z;
       /// returns nummber of triangles in mesh if one is not encounter (this value will be out of range of triangles)
@@ -74,12 +72,11 @@ namespace VarianTools
         for (int ti = 0; ti < count; ti++)
         {
           var r = TriangleIntersectsPlane(ti, z);
-          if (r == IntersectState.Coincident || r == IntersectState.Bisects)
+          if (r == EdgeIntersection.Coincident || r == EdgeIntersection.Bisects)
             return ti;
         }
         return count;
       }
-
       /// <summary>
       /// returns the first edge of triangle ti to intersect plane z
       /// </summary>
@@ -99,7 +96,7 @@ namespace VarianTools
           foreach (var e in edges)
           {
             var r = EdgeIntersectedByZ(Triangles[ti].Edge(e), z);
-            if (r == IntersectState.Bisects || r == IntersectState.Coincident)
+            if (r == EdgeIntersection.Bisects || r == EdgeIntersection.Coincident)
               return Triangles[ti].Edge(e);
           }
         }
@@ -112,7 +109,6 @@ namespace VarianTools
         return null;
         
       }
-
       /// <summary>
       /// returns the second edge to instersect the plane defined by z for triangle ti and first edge e1  
       /// if plane is coincident with first edge returns null
@@ -130,7 +126,7 @@ namespace VarianTools
           if (!EdgesMatch(e1, edge))
           {
             var r = EdgeIntersectedByZ(edge, z);
-            if (r == IntersectState.Bisects)
+            if (r == EdgeIntersection.Bisects)
               return edge;
           }
         }
@@ -138,41 +134,38 @@ namespace VarianTools
         return null;
       
       }
-
-
-      public IntersectState TriangleIntersectsPlane(int ti, double z)
+      public EdgeIntersection TriangleIntersectsPlane(int ti, double z)
       {
         for (int i = 0; i < 3; i++)
         {
           var result = EdgeIntersectedByZ(Triangles[ti].Edge(i), z);
-          if (result == IntersectState.Bisects || result == IntersectState.Coincident)
+          if (result == EdgeIntersection.Bisects || result == EdgeIntersection.Coincident)
             return result;
         }
-        return IntersectState.NoIntersection;
+        return EdgeIntersection.NoIntersection;
       }
-
-      public IntersectState EdgeIntersectedByZ(List<int> edge, double z)
+      public EdgeIntersection EdgeIntersectedByZ(List<int> edge, double z)
       {
         // WHAT IF LINE RUNS ALONG EDGE???
 
         if (edge.Count == 2)
         {
-          double az = Points[edge[0]].Z;
-          double bz = Points[edge[1]].Z;
+          double az = Points[edge[0]].z;
+          double bz = Points[edge[1]].z;
 
           if (az > bz)
           {
             if (z < az && z > bz)
-              return IntersectState.Bisects;
+              return EdgeIntersection.Bisects;
           }
           else if (bz > az)
           {
             if (z < bz && z > az)
-              return IntersectState.Bisects;
+              return EdgeIntersection.Bisects;
           }
           else if (az == bz && z == az)
           {
-            return IntersectState.Coincident;
+            return EdgeIntersection.Coincident;
             
             /*string msg = "Warning:\npublic bool EdgeIntersectedByZ(List<int> edge, double z)\n";
             msg += "\nz: " + z.ToString();
@@ -185,9 +178,8 @@ namespace VarianTools
           }
         }
 
-        return IntersectState.NoIntersection;
+        return EdgeIntersection.NoIntersection;
       }
-
       /// <summary>
       /// retruns a point (VVector) along edge at z
       /// </summary>
@@ -201,29 +193,27 @@ namespace VarianTools
         int i1 = edge[0];  // point index 1
         int i2 = edge[1];  // point index 2
 
-        double d = (z - Points[i1].Z) / (Points[i2].Z - Points[i1].Z);  // intersection parameter d (relative distance when travelling from p1 to p2)
+        double d = (z - Points[i1].z) / (Points[i2].z - Points[i1].z);  // intersection parameter d (relative distance when travelling from p1 to p2)
 
-        point.x = Points[i1].X + d * (Points[i2].X - Points[i1].X);
-        point.y = Points[i1].Y + d * (Points[i2].Y - Points[i1].Y);
+        point.x = Points[i1].x + d * (Points[i2].x - Points[i1].x);
+        point.y = Points[i1].y + d * (Points[i2].y - Points[i1].y);
         point.z = z;
 
         return point;
       }
 
-
-
-
-
     }
 
-    public enum IntersectState
+    public enum EdgeIntersection
     { 
       NoIntersection,
       Bisects,
       Coincident
     }
-  
-  
+
+
+
+
   }
 
 

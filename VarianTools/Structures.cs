@@ -103,15 +103,38 @@ namespace VarianTools
     public static void StructureFromXmesh(Image img, XMesh xm, Structure s)
     {
 
-            
+      // CURRENTLY ONLY SAMPLES SINGLE SEGMENT OF CONTOUR ON PLANE
       // TASK: NEED TO VERIFY HOW TO BEST HANDLE PARTIAL VOLUME EFFECTS WITH ZDICOMTOIMGPLANE ETC.
-      
+      // REVIEW SUB FUNCTIONS - CURRENT STATUS IS TESTING CONTOUR EXTRACTION AND ROTATION //
+
       // Get max and min z 
-      var maxZ = xm.Points.Max(p => p.Z);
-      var minZ = xm.Points.Min(p => p.Z);
+      var maxZ = xm.Points.Max(p => p.z);
+      var minZ = xm.Points.Min(p => p.z);
       var maxIndex = Images.ZDicomToImgPlane(img, maxZ);
       var minIndex = Images.ZDicomToImgPlane(img, minZ);
 
+      /*string msg = "";
+      msg += "maxZ: " + maxZ.ToString();
+      msg += "\nminZ: " + minZ.ToString();
+      msg += "\nmaxIndex: " + maxIndex.ToString();
+      msg += "\nminIndex: " + minIndex.ToString();
+      MessageBox.Show(msg);*/
+
+      for (int i = minIndex; i <= maxIndex; i++)
+      {
+        var zDicom = Images.ImgPlaneToZDicom(img, i);
+        //MessageBox.Show(zDicom.ToString());
+        var contour = xm.MarchingCubeAlgorithmSingleSegment(zDicom);
+
+        if (contour != null)
+        {
+          //MessageBox.Show("index: " + i.ToString() + "\nContour length: " + contour.Length.ToString());
+          foreach (var segment in contour)
+            s.AddContourOnImagePlane(segment, i);
+        }
+      }
+
+      //xm.MarchingCubeAlgorithm()
       /*
       string msg = "";
 
@@ -124,13 +147,6 @@ namespace VarianTools
       
       MessageBox.Show(msg);
       */
-
-      for (int i = minIndex; i <= maxIndex; i++)
-      {
-        double z = Images.ImgPlaneToZDicom(img, i);
-        s.AddContourOnImagePlane(xm.MarchingCubeAlgorithm(z),i);
-      }
-      
 
 
     }
