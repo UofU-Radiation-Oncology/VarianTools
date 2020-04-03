@@ -10,126 +10,12 @@ namespace VarianTools
 
   public static partial class Structures
   {
-    /// <summary>
-    /// Rotates all points in a given structure according to provided angles alpha, beta, and gamma 
-    /// </summary>
-    /// <param name="s">Structure </param>
-    /// <param name="img">Image</param>
-    /// <param name="adeg">angle alpha in degrees</param>
-    /// <param name="bdeg">angle beta  in degrees</param>
-    /// <param name="gdeg">angle gamma in degrees</param>
-    public static void RotateStructure(Structure s, Image img, double adeg, double bdeg, double gdeg)
-    {
-      //VVector[][][] rpoints = new VVector[img.ZSize][][]; // vector for storing new points 
-      VolumeContourPoints cvol = new VolumeContourPoints();
 
-      // -- Rotate Contour and store in rpoints -- // 
-
-      // foreach image plane (i)
-      for (int i = 0; i < 2/*img.ZSize*/; i++)
-      {
-        var contours = s.GetContoursOnImagePlane(i);
-        if (contours.Length > 0)
-        {
-          // foreach contour (j) on img plane i
-          for (int j = 0; j < contours.Length; j++)
-          {
-            // foreach point (k) of contour j
-            for (int k = 0; k < contours[j].Length; k++)
-            {
-              //MessageBox.Show(i.ToString() + "\n" + j.ToString() + "\n" + k.ToString());
-
-              // Rotate point
-              VVector pprime = RotatePoint(contours[j][k], adeg, bdeg, gdeg);
-
-              // Add pprime to new contour representation
-              cvol.allpoints.Add(pprime);
-
-              //MessageBox.Show("Point Rotated");
-              /*
-              try
-              {
-
-                // Add point to rotated contour VVector List (rpslist)
-                int ip = ZDicomToImgPlane(img, pprime.z);
-                //MessageBox.Show(ip.ToString());
-                
-                rpoints[ip][j][k].x = pprime.x;
-
-                string msg = "";
-                msg += "img plane: " + i.ToString();
-                msg += "\ncontour: " + j.ToString();
-                msg += "\npoint:   " + k.ToString();
-                MessageBox.Show(msg);
-
-                rpoints[ip][j][k].y = pprime.y;
-                rpoints[ip][j][k].z = ImgPlaneToZDicom(img, ip);
-              }
-              catch(Exception e)
-              {
-                
-                string msg = "";
-                //msg += e.Message.ToString() += "\n\n";
-                msg += "img plane: " + i.ToString();
-                msg += "\ncontour: " + j.ToString();
-                msg += "\npoint:   " + k.ToString();
-                msg += "\n\nOriginal Point";
-                msg += "\npoint x: " + contours[j][k].x.ToString();
-                msg += "\npoint y: " + contours[j][k].y.ToString();
-                msg += "\npoint z: " + contours[j][k].z.ToString();
-
-                msg += "\n\nRotated Point";
-                msg += "\npoint x: " + pprime.x.ToString();
-                msg += "\npoint y: " + pprime.y.ToString();
-                msg += "\npoint z: " + pprime.z.ToString();
-
-                MessageBox.Show(msg);
-               }
-               */
-            }
-          }
-        }
-      }
-
-      // -- Clear current contours and add rotated img contour for all image planes -- // 
-
-      for (int i = 0; i < img.ZSize; i++)
-      {
-        s.ClearAllContoursOnImagePlane(i);
-        double imgz = Images.ImgPlaneToZDicom(img, i);
-        double range = img.ZRes;
-        VVector[] contour = cvol.ContourOnImage(imgz, range);
-        if (contour.Length > 0)
-          s.AddContourOnImagePlane(contour, i);
-      }
-
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="p"></param>
-    /// <param name="adeg"></param>
-    /// <param name="bdeg"></param>
-    /// <param name="gdeg"></param>
-    /// <returns></returns>
-    public static VVector RotatePoint(VVector p, double adeg, double bdeg, double gdeg)
-    {
-      double alpha = adeg * Math.PI / 180.0;
-      double beta = bdeg * Math.PI / 180.0;
-      double gamma = gdeg * Math.PI / 180.0;
-
-      EulerAngles ea = new EulerAngles("XY'Z", alpha, beta, gamma);
-      var ep = Rotation.RotatePoint(new EulerPoint(p.x, p.y, p.z), ea);
-      return new VVector(ep.x, ep.y, ep.z);
-    }
-
-    
 
   }
 
 
-  // ---- VolumeContourPoint Class Definition ----- //
+  // ---- VolumeContourPoint Class Definition ----- DEPRACATED //
 
   public class VolumeContourPoints
   {

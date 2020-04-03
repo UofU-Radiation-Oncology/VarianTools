@@ -13,7 +13,7 @@ using VarianTools;
 using System.Windows.Media.Media3D;
 using HelixToolkit.Wpf;
 using Microsoft.VisualBasic;
-
+using Euler;
 
 namespace UnitTestingForm
 {
@@ -170,7 +170,6 @@ namespace UnitTestingForm
     
 
     }
-
     public void MarchingCubesHandlesCoincidencesAndFacesTest()
     {
       string fname = @"O:\Software\Testing\SimpleMesh.mgo";
@@ -251,7 +250,7 @@ namespace UnitTestingForm
       Structures.XMesh mX = new Structures.XMesh(m3d);
       MessageBox.Show(mX.MeshVolume().ToString());
       MessageBox.Show(mX.Points[0].x.ToString());
-      mX.RotatePointsToMaximizeVolume(1.0, 1.5, 2.0);
+      //mX.RotatePointsToMaximizeVolume(1.0, 1.5, 2.0);
       MessageBox.Show(mX.Points[0].x.ToString());
       MessageBox.Show(mX.MeshVolume().ToString());
       //MessageBox.Show(mX.MeshVolume().ToString());
@@ -295,12 +294,37 @@ namespace UnitTestingForm
       vcp.allpoints.Add(new VVector(0.0, 0.5, 1.0));
       vcp.allpoints.Add(new VVector(1.0, 1.0, 1.0));
     }
+    public void TestRandomNumberGenerator()
+    {
+      /*
+      EulerAngles ea = new EulerAngles("XYZ", 2.0, 3.0, 4.0);
+      for (int i = 0; i < 10; i++)
+      {
+        var rea = Euler.RandomGenerator.SampleEulerAngles(ea);
+        string msg = "";
+        msg += "alpha: " + ea.alpha.ToString() + "  random alpha: " + rea.alpha.ToString();
+        msg += "\nbeta: " + ea.beta.ToString() + "  random beta: " + rea.beta.ToString();
+        msg += "\nbeta: " + ea.gamma.ToString() + "  random gamma: " + rea.gamma.ToString();
+        MessageBox.Show(msg);
+      }*/
+    }
+
+    public void TestAppendConstrainedSTring()
+    {
+      string tst = "TestStringLength";
+      var tstappend = General.AppendConstrianedString(tst, "APPND", General.EclipseStringType.StructureId);
+      
+      MessageBox.Show(tst + "\n\n" + tstappend + "\n\n" + ((int)General.EclipseStringType.StructureId).ToString() );
+
+    }
     private void Button1_Click(object sender, EventArgs e)
     {
-      StructFromXMeshTesting();
+      //StructFromXMeshTesting();
       //MarchingCubesHandlesCoincidencesAndFacesTest();
       //TriangleContainsPointTesting();
       //PointOnEdgeTesting();
+      //TestAppendConstrainedSTring();
+      TestRandomNumberGenerator();
     }
 
     

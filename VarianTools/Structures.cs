@@ -3,12 +3,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using VMS.TPS.Common.Model.API;
+using VMS.TPS.Common.Model.Types;
 using Euler;
+using System.Windows.Media;
 
 namespace VarianTools
 {
   public static partial class Structures
   {
+    
+
+    public static bool StructureExists(StructureSet ss, string sId)
+    {
+      bool exists = false;
+      foreach (var s in ss.Structures)
+      {
+        if (s.Id == sId)
+          exists = true;
+      }
+      return exists;
+    }
+
+
     /// <summary>
     /// returns structure set for PlanningItem plan
     /// </summary>
@@ -50,6 +66,17 @@ namespace VarianTools
       return null;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="ss"></param>
+    /// <param name="query"></param>
+    public static void DeleteStructure(StructureSet ss, string query)
+    {
+      var s = GetStructure(ss, query);
+      if (s != null)
+        ss.RemoveStructure(s);
+    }
     public static Nullable<int> GetStructureIndex(StructureSet ss, string query)
     {
       for (int i = 0; i < StructureCount(ss); i++)
@@ -152,50 +179,60 @@ namespace VarianTools
     }
 
 
-    public static void GenerateRotationalEnvelope(StructureSet ss, string sID)
+    /// <summary>
+    /// Genrates a rotational envelope that encompases all potential rotations of struture s given a magnitude and convention of rotation specified by ea
+    /// </summary>
+    /// <param name="ss">structure set</param>
+    /// <param name="s">structure used for generating rotational envelope</param>
+    /// <param name="p">point around which rotation occurs</param>
+    /// <param name="ea">Euler convention and magnitude of rotations</param>
+    /// /// <param name="i">number of iterations in brute force approach</param>
+    public static void GenerateRotationalEnvelope(Image img, StructureSet ss, Structure s0, string sRotEnv, VVector p, EulerAngles ea, int n)
     {
-      // Get original structure s0
-      var s0 = ss.Structures.First(s => s.Id == sID);
 
-      // Create copy of s0 and assign to sPre
-      var sPre = ss.AddStructure("CONTROL", "GRETEMPsPre");
+      //string convention should = "XY'Z"
+
+      // Create copy of s0 and store as pre
+      var sPre = ss.AddStructure("CONTROL", sRotEnv);
       sPre.SegmentVolume = s0.Margin(0.0);
+      
+      // random number generator is declared here and passed to sampling function to avoid potential deterministic effects of redclaring generator for each sample
+      Random rn_gen = new Random();
 
-      // Get list of Euler angles
-      string convention = "XY'Z";
-      List<EulerAngles> Angles = new List<EulerAngles>();
-      Angles.Add(new EulerAngles(convention, 1 / 180 * Math.PI, 2 / 180 * Math.PI, 3 / 180 * Math.PI));
-      //List<Euler.EulerAngles> Angles = Euler.RelatedFunctions.RandomRotationsWithBounds(convention, 1, 1, 1, 2);
-
-      foreach (var ea in Angles)
+      for (int i = 0; i < n; i++)
       {
-
         // Get Original Mesh
         var sXm = new Structures.XMesh(s0.MeshGeometry);
 
+        // Get random angles
+        var rea = Euler.RandomGenerator.SampleEulerAngles(rn_gen,ea);
+
         // Rotate Mesh 
-        sXm.RotateMeshPoints(ea);
+        sXm.RotateMeshPoints(rea,p);
 
-        // Get rotated structure (sRot) from mesh
-        string rsId = "GRETEMPsRot";
-        //StructureFromXmesh(sXm, rsId);
-        var sRot = GetStructure(ss, rsId);
+        // Create contour from rotated mesh - search for unique name - it seems 
+        string sRotId = General.AppendConstrianedString(s0.Id, "R" + n.ToString(), General.EclipseStringType.StructureId);
+        if (StructureExists(ss, sRotId))
+          DeleteStructure(ss, sRotId);
+        var sRot = ss.AddStructure("CONTROL", sRotId);
+        Structures.StructureFromXmesh(img, sXm, sRot);
 
-        // Add sRot to sPre
-        var sPst = ss.AddStructure("CONTROL", "GRETEMPsPst");
+        // add rotated structure to composite structure
+        string sPstId = General.AppendConstrianedString(s0.Id, "P" + n.ToString(), General.EclipseStringType.StructureId);
+        if (StructureExists(ss, sPstId))
+          DeleteStructure(ss, sPstId);
+        var sPst = ss.AddStructure("CONTROL", sPstId);
         sPst.SegmentVolume = sPre.Or(sRot);
-
-        // Remove sRot and SPre
-        ss.RemoveStructure(sRot);
-        ss.RemoveStructure(sPre);
-
-        // Set sPre to sPst and remove sPst
-        sPre = ss.AddStructure("CONTROL", "GRETEMPsPre");
+        
+        // set pre to post, remove pre and rot 
         sPre.SegmentVolume = sPst.SegmentVolume;
-
-        // Remove sPst
+        ss.RemoveStructure(sRot);
         ss.RemoveStructure(sPst);
       }
+        
+
+
+
     }
   }
 

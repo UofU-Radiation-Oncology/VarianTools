@@ -105,15 +105,19 @@ namespace VarianTools
   return new VVector(ep.x, ep.y, ep.z);
 }*/
 
-      public void RotateMeshPoints(EulerAngles ea)
+      public void RotateMeshPoints(EulerAngles ea, VVector r)
       {
-        
+
         //double alpha = adeg * Math.PI / 180.0; // convert to radians
         //double beta = bdeg * Math.PI / 180.0;  // convert to radians
         //double gamma = gdeg * Math.PI / 180.0; // convert to radians
 
         //EulerAngles ea = new EulerAngles("XY'Z", alpha, beta, gamma); //specifies the angles and the convention for rotation
 
+        // Coordinate transform such that origin is r
+        RebaseMeshPoints(r);
+
+        // rotate
         for (int i = 0; i < Points.Count; i++)
         {
           VVector p = Points[i];
@@ -121,6 +125,9 @@ namespace VarianTools
           Points[i] = new VVector(ep.x, ep.y, ep.z);
         }
 
+        // Coordinate transform back to DICOM origin
+        VVector r_inv = new VVector(r.x * -1.0, r.y * -1.0, r.z * -1.0);
+        RebaseMeshPoints(r_inv);
       }
 
 

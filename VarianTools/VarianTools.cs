@@ -10,6 +10,9 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.IO;
 using System.Windows.Media.Media3D;
+using System.Reflection;
+
+
 
 namespace VarianTools
 {
@@ -171,8 +174,16 @@ namespace VarianTools
     {
       int allowed_length = (int)type;
       int n = orig.Length + append.Length - allowed_length;
-      orig.Remove(orig.Length - n, n);
+
+      if (n > 0)
+        orig = orig.Remove(orig.Length - n, n);
+      
       return orig + append;
+    }
+
+    public static void CMsg(string txt)
+    {
+      System.Console.WriteLine(txt);
     }
 
     public static VVector Point3dToVVector(Point3D p)
