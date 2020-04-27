@@ -15,6 +15,8 @@ namespace VarianTools
     {
 
       // These functions are related to the first iteration of the algorithm (Edge Search) Likely can be deleted. 
+      
+      /*
       public EdgeIntersection EdgeIntersectsPlane(int ti, double z)
       {
         for (int i = 0; i < 3; i++)
@@ -24,7 +26,9 @@ namespace VarianTools
             return r;
         }
         return EdgeIntersection.NoIntersection;
-      }
+      }*/
+      
+      /*
       /// <summary>
       /// returns index of triangle that shares an edge with egde ei of Triangle ti else it returns ti
       /// </summary>
@@ -47,7 +51,9 @@ namespace VarianTools
         }
 
         return ti;
-      }
+      }*/
+
+      /*
       public bool EdgesMatch(List<int> e1, List<int> e2)
       {
         int m = 0;
@@ -59,7 +65,9 @@ namespace VarianTools
         else
           return false;
 
-      }
+      }*/
+
+        /*
       /// <summary>
       /// return index of first triangle encountered to interesect plane defined by z;
       /// returns nummber of triangles in mesh if one is not encounter (this value will be out of range of triangles)
@@ -76,7 +84,8 @@ namespace VarianTools
             return ti;
         }
         return count;
-      }
+      }*/
+      /*
       /// <summary>
       /// returns the first edge of triangle ti to intersect plane z
       /// </summary>
@@ -109,6 +118,8 @@ namespace VarianTools
         return null;
         
       }
+      */
+      /*
       /// <summary>
       /// returns the second edge to instersect the plane defined by z for triangle ti and first edge e1  
       /// if plane is coincident with first edge returns null
@@ -133,7 +144,9 @@ namespace VarianTools
         
         return null;
       
-      }
+      }*/
+
+        /*
       public EdgeIntersection TriangleIntersectsPlane(int ti, double z)
       {
         for (int i = 0; i < 3; i++)
@@ -143,7 +156,9 @@ namespace VarianTools
             return result;
         }
         return EdgeIntersection.NoIntersection;
-      }
+      }*/
+
+        /*
       public EdgeIntersection EdgeIntersectedByZ(List<int> edge, double z)
       {
         // WHAT IF LINE RUNS ALONG EDGE???
@@ -167,19 +182,21 @@ namespace VarianTools
           {
             return EdgeIntersection.Coincident;
             
-            /*string msg = "Warning:\npublic bool EdgeIntersectedByZ(List<int> edge, double z)\n";
+            string msg = "Warning:\npublic bool EdgeIntersectedByZ(List<int> edge, double z)\n";
             msg += "\nz: " + z.ToString();
             msg += "\nv1 z: " + az.ToString();
             msg += "\nv2 z: " + bz.ToString();
 
             msg += "\n\nPlane is coincident with mesh edge - algorithms dependent on edge intersections may be ill behaved";
-            MessageBox.Show(msg,"Warning",MessageBoxButtons.OK,MessageBoxIcon.Warning);*/
+            MessageBox.Show(msg,"Warning",MessageBoxButtons.OK,MessageBoxIcon.Warning);
 
           }
         }
 
         return EdgeIntersection.NoIntersection;
-      }
+      }*/
+
+      /*
       /// <summary>
       /// retruns a point (VVector) along edge at z
       /// </summary>
@@ -200,16 +217,17 @@ namespace VarianTools
         point.z = z;
 
         return point;
-      }
+      }*/
 
     }
-
+    
+    /*
     public enum EdgeIntersection
     { 
       NoIntersection,
       Bisects,
       Coincident
-    }
+    }*/
 
 
 

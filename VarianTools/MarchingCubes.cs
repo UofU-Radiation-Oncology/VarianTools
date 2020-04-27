@@ -12,7 +12,7 @@ namespace VarianTools
   {
     public partial class XMesh
     {
-      public VVector[] MarchingCubeAlgorithmEdgeSearch(double z)
+      /*public VVector[] MarchingCubeAlgorithmEdgeSearch(double z)
       {
         // CURRENTLY DOES NOT ACCOMMODATE MULTIPLE SEGMENTS
         // NEED TO DETERMINE HOW TO HANDLE COINCIDENT EDGES
@@ -67,7 +67,8 @@ namespace VarianTools
         MessageBox.Show("Marching Cubes Finished");
         return segment.ToArray();
       }
-
+      */
+      
       public VVector[][] MarchingCubeAlgorithm(double z)
       {
         List<VVector[]> segments = new List<VVector[]>();

@@ -323,8 +323,8 @@ namespace UnitTestingForm
       //MarchingCubesHandlesCoincidencesAndFacesTest();
       //TriangleContainsPointTesting();
       //PointOnEdgeTesting();
-      //TestAppendConstrainedSTring();
-      TestRandomNumberGenerator();
+      TestAppendConstrainedSTring();
+      //TestRandomNumberGenerator();
     }
 
     
