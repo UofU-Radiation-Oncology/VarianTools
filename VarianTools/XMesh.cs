@@ -65,45 +65,7 @@ namespace VarianTools
           plist.Add(Points[pi]);
         return plist;
       }
-      /*public void RotatePointsToMaximizeVolume(double adeg, double bdeg, double gdeg)
-      {
-        for (int i = 0; i < Points.Count; i++)
-          RotatePointToMaximizeVolume(i, adeg, bdeg, gdeg);
-      }*/
-      /*public void RotatePointToMaximizeVolume(int pi, double adeg, double bdeg, double gdeg)
-      {
 
-        //? does the maximum angular deviation result in the maximum volume increase 
-        List<double> dir = new List<double>();
-        dir.Add(1.0);
-        dir.Add(-1.0);
-
-        foreach (var d in dir)
-        {
-          // Get original point and volume
-          VVector p0 = Points[pi];
-          double v0 = MeshVolume();
-
-          // Rotate Point
-          Points[pi] = RotateMeshPoint(p0, adeg*d, bdeg*d, gdeg*d);
-
-          // Get new volume
-          double vprime = MeshVolume();
-
-          if (vprime < v0)
-            Points[pi] = p0;
-        }
-      }*/
-      /*public VVector RotateMeshPoint(VVector p, double adeg, double bdeg, double gdeg)
-{
-  double alpha = adeg * Math.PI / 180.0; // convert to radians
-  double beta = bdeg * Math.PI / 180.0;  // convert to radians
-  double gamma = gdeg * Math.PI / 180.0; // convert to radians
-
-  EulerAngles ea = new EulerAngles("XY'Z", alpha, beta, gamma); //specifies the angles and the convention for rotation
-  var ep = Rotation.RotatePoint(new EulerPoint(p.x, p.y, p.z), ea);
-  return new VVector(ep.x, ep.y, ep.z);
-}*/
 
       public void RotateMeshPoints(EulerAngles ea, VVector r)
       {
@@ -147,7 +109,20 @@ namespace VarianTools
         }
       }
 
-
+      public void WriteMeshToMacFile()
+      {
+        List<string> lines = new List<string>();
+        
+        foreach (var p in Points)
+        {
+          var x = p.x - Points[0].x;
+          var y = p.y - Points[0].y;
+          var z = p.z - Points[0].z;
+          lines.Add(x.ToString() + "\t" + y.ToString() + "\t" + z.ToString());
+       
+        }
+        General.WriteLinesToFile(@"O:\MacMesh.txt", lines);      
+      }
     } // end of XMesh class
 
   }

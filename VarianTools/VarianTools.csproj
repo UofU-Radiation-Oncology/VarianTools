@@ -39,7 +39,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>O:\Software\Libraries\EulerRotation.dll</HintPath>
     </Reference>
+    <Reference Include="MeshViewer3D, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Libraries\MeshViewer3D.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -77,9 +82,6 @@
       <DependentUpon>XMesh.cs</DependentUpon>
     </Compile>
     <Compile Include="MarchingCubesUtilities.cs">
-      <DependentUpon>XMesh.cs</DependentUpon>
-    </Compile>
-    <Compile Include="MarchingCubeUtil.cs">
       <DependentUpon>XMesh.cs</DependentUpon>
     </Compile>
     <Compile Include="MeshTriangle.cs">

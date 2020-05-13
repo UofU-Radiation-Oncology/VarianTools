@@ -27,10 +27,8 @@ namespace VarianTools
 
             if (r == TriangleIntersection.EdgeEdge)
               nextTriangles.Add(i);
-
             if (r == TriangleIntersection.Coincident)
               nextTriangles.Add(i);
-
             if (r == TriangleIntersection.PointEdge)
               nextTriangles.Add(i);
           }
@@ -178,7 +176,7 @@ namespace VarianTools
         // Edge Edge Check
         if (vonz == 0 && ebyz == 2)
           return TriangleIntersection.EdgeEdge;
-
+        
         return TriangleIntersection.NoIntersection;
       }
 

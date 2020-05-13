@@ -152,6 +152,7 @@ namespace VarianTools
         var zDicom = Images.ImgPlaneToZDicom(img, i);
         //MessageBox.Show(zDicom.ToString());
         var contour = xm.MarchingCubeAlgorithmSingleSegment(zDicom);
+        //var contour = xm.MarchingCubeAlgorithm(zDicom);
 
         if (contour != null)
         {
@@ -191,6 +192,10 @@ namespace VarianTools
     {
 
       //string convention should = "XY'Z"
+
+      // Convert to high resolution structure
+      if (!s0.IsHighResolution && s0.CanConvertToHighResolution())
+        s0.ConvertToHighResolution();
 
       // Create copy of s0 and store as pre
       var sPre = ss.AddStructure("CONTROL", sRotEnv);

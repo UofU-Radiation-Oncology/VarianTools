@@ -86,21 +86,32 @@ namespace VarianTools
 
       return false;
     }
-
-    public static void CopyBeamsToNewPlan(ExternalPlanSetup op, ExternalPlanSetup np)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="op"></param>
+    /// <param name="np"></param>
+    /// <param name="iso">VVector isocenter position in new image to which beam will be copied</param>
+    public static void CopyBeamsToNewPlan(ExternalPlanSetup op, ExternalPlanSetup np, VVector iso)
     {
       foreach (var beam in op.Beams)
       {
         if (!beam.IsSetupField)
         {
           General.CMsg("\nattempting to copy: " + beam.Id + " from plan " + op.Id + " to plan " + np.Id);
-          DuplicateBeam(np, beam);  // copy beam to new plan
+          DuplicateBeam(np, beam, iso);  // copy beam to new plan
           General.CMsg("\nsuccessful copy");
         }
       }
     }
 
-    public static void DuplicateBeam(ExternalPlanSetup plan, Beam beam)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="plan"></param>
+    /// <param name="beam"></param>
+    /// <param name="iso">VVector isocenter position in new image to which beam will be copied</param> 
+    public static void DuplicateBeam(ExternalPlanSetup plan, Beam beam, VVector iso)
     {
       // PRIMARY FLUENCE MODEL ID????
 
@@ -117,59 +128,61 @@ namespace VarianTools
       double g_start = beam.ControlPoints.First().GantryAngle; // gantry start
       double g_stop = beam.ControlPoints.Last().GantryAngle; // gantry stop
       double psa = beam.ControlPoints.First().PatientSupportAngle; // couch
-      VVector iso = beam.IsocenterPosition; // isocenter
       int cpn = beam.ControlPoints.Count(); // number of controlpoints
       float [,] lp = beam.ControlPoints.First().LeafPositions;
       List<double> msw = new List<double>(); // meterset weights
       foreach (var cp in beam.ControlPoints)
         msw.Add(cp.MetersetWeight);
 
+      var ep = beam.GetEditableParameters();
+      ep.Isocenter = iso;
+
       if (btype == General.EclipseBeamType.ArcBeam)
       {
         var db = plan.AddArcBeam(mp, jp, col, g_start, g_stop, beam.GantryDirection, psa, iso); // create beam in ExternalPlanSetup plan
-        db.ApplyParameters(beam.GetEditableParameters());
+        db.ApplyParameters(ep);
       }
 
       else if (btype == General.EclipseBeamType.ConformalArcBeam)
       {
         var db = plan.AddConformalArcBeam(mp, col, cpn, g_start, g_stop, beam.GantryDirection, psa, iso);
-        db.ApplyParameters(beam.GetEditableParameters());
+        db.ApplyParameters(ep);
       }
 
       else if (btype == General.EclipseBeamType.MLCArcBeam)
       {
         var db = plan.AddMLCArcBeam(mp, lp, jp, col, g_start, g_stop, beam.GantryDirection, psa, iso);
-        db.ApplyParameters(beam.GetEditableParameters());
+        db.ApplyParameters(ep);
       }
 
       else if (btype == General.EclipseBeamType.MLCBeam)
       {
         var db = plan.AddMLCBeam(mp, lp, jp, col, g_start, psa, iso);
-        db.ApplyParameters(beam.GetEditableParameters());
+        db.ApplyParameters(ep);
       }
 
       else if (btype == General.EclipseBeamType.MultipleStaticSegmentBeam)
       {
         var db = plan.AddMultipleStaticSegmentBeam(mp, msw, col, g_start, psa, iso);
-        db.ApplyParameters(beam.GetEditableParameters());
+        db.ApplyParameters(ep);
       }
 
       else if (btype == General.EclipseBeamType.SlidingWindowBeam)
       {
         var db = plan.AddSlidingWindowBeam(mp, msw, col, g_start, psa, iso);
-        db.ApplyParameters(beam.GetEditableParameters());
+        db.ApplyParameters(ep);
       }
 
       else if (btype == General.EclipseBeamType.StaticBeam)
       {
         var db = plan.AddStaticBeam(mp, jp, col, g_start, psa, iso);
-        db.ApplyParameters(beam.GetEditableParameters());
+        db.ApplyParameters(ep);
       }
 
       else if (btype == General.EclipseBeamType.VMATBeam)
       {
         var db = plan.AddVMATBeam(mp, msw, col, g_start, g_stop, beam.GantryDirection, psa, iso);
-        db.ApplyParameters(beam.GetEditableParameters());
+        db.ApplyParameters(ep);
       }
 
     }
