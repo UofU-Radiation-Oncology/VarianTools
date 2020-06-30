@@ -20,7 +20,8 @@ namespace VarianTools
       {
         string msg = "Warning: ImgPlaneToZDicom has not been validated for orientations other than HFS";
         msg += "\nCurrent image orientation: " + img.ImagingOrientation.ToString();
-        MessageBox.Show(msg);
+        //MessageBox.Show(msg);
+        General.CMsg(msg);
       }
       
       return (img.ZDirection.z * img.Origin.z) + ((double)ip * img.ZRes);

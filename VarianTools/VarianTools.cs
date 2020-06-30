@@ -57,7 +57,9 @@ namespace VarianTools
       }
       else
       {
-        MessageBox.Show("Error in loading planning item", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //MessageBox.Show("Error in loading planning item", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        var msg = "Error in loading planning item";
+        General.CMsg(msg);
         return null;
 
       }
@@ -100,6 +102,7 @@ namespace VarianTools
         {
           General.CMsg("\nattempting to copy: " + beam.Id + " from plan " + op.Id + " to plan " + np.Id);
           DuplicateBeam(np, beam, iso);  // copy beam to new plan
+          //CopyBeam(np, beam, iso);  // copy beam to new plan
           General.CMsg("\nsuccessful copy");
         }
       }
@@ -119,10 +122,15 @@ namespace VarianTools
 
       // machine parameters
       string mID = beam.TreatmentUnit.Id; ;  // machine ID
+      General.CMsg(mID);
       string eID = beam.EnergyModeDisplayName;  // energy ID
+      General.CMsg(eID);
       int dr = beam.DoseRate;     // dose rate
+      General.CMsg(dr.ToString());
       string tID = beam.Technique.Id;  // technique ID
+      General.CMsg(tID);
       ExternalBeamMachineParameters mp = new ExternalBeamMachineParameters(mID, eID, dr, tID, null); // machine paramters
+      
       VRect<double> jp = beam.ControlPoints.First().JawPositions; // jaw positions
       double col = beam.ControlPoints.First().CollimatorAngle; // collimator angle 
       double g_start = beam.ControlPoints.First().GantryAngle; // gantry start
@@ -135,6 +143,7 @@ namespace VarianTools
         msw.Add(cp.MetersetWeight);
 
       var ep = beam.GetEditableParameters();
+      General.CMsg("BeamType: " + btype.ToString());
       ep.Isocenter = iso;
 
       if (btype == General.EclipseBeamType.ArcBeam)
@@ -185,6 +194,38 @@ namespace VarianTools
         db.ApplyParameters(ep);
       }
 
+    }
+
+    /// <summary>
+    /// Create a copy of an existing beam (beams are unique to plans).
+    /// (from Varian Code Samples)
+    /// </summary>
+    public static Beam CopyBeam(ExternalPlanSetup plan, Beam b, VVector iso) 
+    {
+      
+      // machine parameters
+      string mID = b.TreatmentUnit.Id; ;  // machine ID
+      string eID = b.EnergyModeDisplayName;  // energy ID
+      int dr = b.DoseRate;     // dose rate
+      string tID = b.Technique.Id;  // technique ID
+      ExternalBeamMachineParameters mp = new ExternalBeamMachineParameters(mID, eID, dr, tID, null); // machine paramters
+
+      // Create a new beam
+      var collimatorAngle = b.ControlPoints.First().CollimatorAngle;
+      var gantryAngle = b.ControlPoints.First().GantryAngle;
+      var metersetWeights = b.ControlPoints.Select(cp => cp.MetersetWeight);
+      var PatientSupportAngle = b.ControlPoints.First().PatientSupportAngle;
+      var nb = plan.AddSlidingWindowBeam(mp, metersetWeights, collimatorAngle, gantryAngle, PatientSupportAngle, iso);
+
+      // Copy control points from the original beam.
+      var editableParams = nb.GetEditableParameters();
+      for (var i = 0; i < editableParams.ControlPoints.Count(); i++)
+      {
+        editableParams.ControlPoints.ElementAt(i).LeafPositions = b.ControlPoints.ElementAt(i).LeafPositions;
+        editableParams.ControlPoints.ElementAt(i).JawPositions = b.ControlPoints.ElementAt(i).JawPositions;
+      }
+      nb.ApplyParameters(editableParams);
+      return nb;
     }
 
     public static General.EclipseBeamType BeamType(Beam beam)
@@ -285,7 +326,8 @@ namespace VarianTools
       }
       catch
       {
-        MessageBox.Show("Error Loading Object");
+        //MessageBox.Show("Error Loading Object");
+        General.CMsg("Error Loading Object");
       }
 
       return objectOut;
@@ -322,10 +364,49 @@ namespace VarianTools
       catch (Exception ex)
       {
         //Log exception here
-        MessageBox.Show("An error occured while trying to save to: " + fileName);
+        //MessageBox.Show("An error occured while trying to save to: " + fileName);
+        General.CMsg("An error occured while trying to save to: " + fileName);
       }
     }
 
+    public static void WriteXMLForPatient(Patient p)
+    {
+
+      XmlWriterSettings settings = new XmlWriterSettings();
+      settings.Indent = true;
+      settings.IndentChars = ("\t");
+      System.IO.MemoryStream mStream = new System.IO.MemoryStream();
+      using (XmlWriter writer = XmlWriter.Create(mStream, settings))
+      {
+        writer.WriteStartDocument(true);
+        writer.WriteStartElement("Patient");
+        p.WriteXml(writer);       // add the Patient XML to the writer stream
+        writer.WriteEndElement(); // </Patient>
+        writer.WriteEndDocument();
+
+        // done writing to the memory stream
+        writer.Flush();
+        mStream.Flush();
+
+        // create the XML file.
+        string temp = System.Environment.GetEnvironmentVariable("TEMP");
+        string sXMLPath = string.Format("{0}\\{1}({2})-patient.xml", temp, p.LastName, p.Id);
+        General.CMsg(sXMLPath);
+        using (System.IO.FileStream file = new System.IO.FileStream(sXMLPath, System.IO.FileMode.Create, System.IO.FileAccess.Write))
+        {
+          // Have to rewind the MemoryStream in order to read its contents. 
+          mStream.Position = 0;
+          mStream.CopyTo(file);
+          file.Flush();
+          file.Close();
+        }
+        // 'Start' generated XML file to launch browser window
+        System.Diagnostics.Process.Start(sXMLPath);
+        // Sleep for a few seconds to let internet browser window to start
+        System.Threading.Thread.Sleep(TimeSpan.FromSeconds(3));
+      }
+
+    }
     public static string AppendConstrianedString(string orig, string append, EclipseStringType type)
     {
       int allowed_length = (int)type;

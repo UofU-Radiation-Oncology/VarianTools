@@ -103,7 +103,8 @@ namespace VarianTools
           msg += "\n\nz: " + z.ToString();
           msg += "\n\ncase1:" + c1.ToString() + " case2:" + c2.ToString() + " case3:" + c3.ToString();
           msg += "\n\ncount: " + iPoints.Count.ToString();
-          MessageBox.Show(msg, "Marching Cubes Algorithm Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+          //MessageBox.Show(msg, "Marching Cubes Algorithm Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+          General.CMsg(msg);
           return null;
         }
       }

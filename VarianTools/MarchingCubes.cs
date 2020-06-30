@@ -174,7 +174,8 @@ namespace VarianTools
             tcheck = t;
             string msg = "Warning: > 2 triangles located in mesh that contain p1 and intersect plane z (excluding previously encountered triangle).";
             msg += "\nAs only two triangles can share an edge, this likely indicates an error in the alorgirthm or mesh ";
-            MessageBox.Show(msg, "Marching Cubes Algorithm Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            //MessageBox.Show(msg, "Marching Cubes Algorithm Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            General.CMsg(msg);
           }
 
           int c = 0;
@@ -200,7 +201,8 @@ namespace VarianTools
               {
                 string msg = "Warning: intersection point already in segment \np:\n" + General.VVectorMessage(p1) + "\ninitial p0:\n" + General.VVectorMessage(p0s) + "\ninitial p1:\n" + General.VVectorMessage(p1s);
                 msg += "\nAs points should only be encountered once, this likely indicates an error in the alorgirthm or mesh";
-                MessageBox.Show(msg, "Marching Cubes Algorithm Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                //MessageBox.Show(msg, "Marching Cubes Algorithm Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                General.CMsg(msg);
               }
             }
 
@@ -218,15 +220,19 @@ namespace VarianTools
               tcheck = t;
               string msg = "Warning: > 2 triangles located in mesh that contain p1 and intersect plane z (exluding previously encountered triangle).";
               msg += "\nAs only two triangles can share an edge, this likely indicates an error in the alorgirthm or mesh ";
-              MessageBox.Show(msg, "Marching Cubes Algorithm Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+              //MessageBox.Show(msg, "Marching Cubes Algorithm Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+              General.CMsg(msg);
             }
             c++;
 
           }
 
           if (c >= Triangles.Count)
-            MessageBox.Show("Marching cube algorithm Warning: \nstarting point not reached - exceeded max triangle constraint in marching algorithm\n ");
-
+          {
+            string msg = "Marching cube algorithm Warning: \nstarting point not reached - exceeded max triangle constraint in marching algorithm\n ";
+            General.CMsg(msg);
+            //MessageBox.Show("Marching cube algorithm Warning: \nstarting point not reached - exceeded max triangle constraint in marching algorithm\n ");
+          }
           segments.Add(segment.ToArray());
 
         }
@@ -255,11 +261,11 @@ namespace VarianTools
         // -- get first point -- //
 
         // get first triangle
-        var t = GetFirstTriangle(z, scanned_triangles);
+        var t = GetFirstTriangle(z, scanned_triangles);  // GetFirstTriangle returns the triangle count if it fails to find a triangle that is not already included in scanned triangles.
         if (t != Triangles.Count)
         {
           var t1 = t; // first triangle 
-          var tcheck = t; // assigned to triangles that share a coincident edge if exists or t if not used in conjunction with t1 to indicate we are back at start 
+          var tcheck = t; // assigned to triangles that share a coincident edge if exists or t if not used in conjunction with t1 to indicate we are back at start DO WE NEED THIS??
           scanned_triangles.Add(t);
 
           // get first intersection points
@@ -284,7 +290,8 @@ namespace VarianTools
             tcheck = t;
             string msg = "Warning: > 2 triangles located in mesh that contain p1 and intersect plane z (excluding previously encountered triangle).";
             msg += "\nAs only two triangles can share an edge, this likely indicates an error in the alorgirthm or mesh ";
-            MessageBox.Show(msg, "Marching Cubes Algorithm Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            //MessageBox.Show(msg, "Marching Cubes Algorithm Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            General.CMsg(msg);
           }
 
           int c = 0;
@@ -310,7 +317,8 @@ namespace VarianTools
               {
                 string msg = "Warning: intersection point already in segment \np:\n" + General.VVectorMessage(p1) + "\ninitial p0:\n" + General.VVectorMessage(p0s) + "\ninitial p1:\n" + General.VVectorMessage(p1s);
                 msg += "\nAs points should only be encountered once, this likely indicates an error in the alorgirthm or mesh";
-                MessageBox.Show(msg, "Marching Cubes Algorithm Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                //MessageBox.Show(msg, "Marching Cubes Algorithm Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                General.CMsg(msg);
               }
             }
 
@@ -318,10 +326,10 @@ namespace VarianTools
             // move on to next triangle
             nextTriangles = GetNextTriangles(p0, p1, z);
             scanned_triangles.AddRange(nextTriangles);
-            General.CMsg("scanned ti: " + t.ToString());
+            //General.CMsg("scanned ti: " + t.ToString());
             var tTEmp = t;
             t = nextTriangles[0];
-            General.CMsg("moving to: " + t.ToString());
+            //General.CMsg("moving to: " + t.ToString());
             if (nextTriangles.Count == 1)
               tcheck = t;
             else if (nextTriangles.Count == 2)
@@ -338,7 +346,7 @@ namespace VarianTools
               nextTriangles.Add(tTEmp);
               foreach (var nt in nextTriangles)
               {
-                
+
                 var mt = Triangles[nt];
                 msg += "\n\nTriangle: " + nt.ToString();
                 msg += "\nIntersection Type: " + GetTriangleIntesection(nt, z).ToString();
@@ -356,8 +364,11 @@ namespace VarianTools
           }
 
           if (c >= Triangles.Count)
-            MessageBox.Show("Marching cube algorithm Warning: \nstarting point not reached - exceeded max triangle constraint in marching algorithm\n ");
-
+          {
+            string msg = "Marching cube algorithm Warning: \nstarting point not reached - exceeded max triangle constraint in marching algorithm\n ";
+            General.CMsg(msg);
+            //MessageBox.Show("Marching cube algorithm Warning: \nstarting point not reached - exceeded max triangle constraint in marching algorithm\n ");
+          }
           segments.Add(segment.ToArray());
 
         }

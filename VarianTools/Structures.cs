@@ -126,7 +126,13 @@ namespace VarianTools
 
     }
 
-   
+    public static void ConvertToHighResolution(Structure s)
+    {
+      if (!s.IsHighResolution && s.CanConvertToHighResolution())
+        s.ConvertToHighResolution();
+    }
+
+
     public static void StructureFromXmesh(Image img, XMesh xm, Structure s)
     {
 
@@ -188,14 +194,20 @@ namespace VarianTools
     /// <param name="p">point around which rotation occurs</param>
     /// <param name="ea">Euler convention and magnitude of rotations</param>
     /// /// <param name="i">number of iterations in brute force approach</param>
-    public static void GenerateRotationalEnvelope(Image img, StructureSet ss, Structure s0, string sRotEnv, VVector p, EulerAngles ea, int n)
+    public static List<double> GenerateRotationalEnvelope(Image img, StructureSet ss, Structure s0, string sRotEnv, VVector p, EulerAngles ea)
     {
+
+      //var msgpre = "VARIANTOOLS.STRUCTURES.GENERATEROTATIONALENVELOPE: "; // prefix used in console messages
+      List<double> vols = new List<double>();
 
       //string convention should = "XY'Z"
 
       // Convert to high resolution structure
       if (!s0.IsHighResolution && s0.CanConvertToHighResolution())
         s0.ConvertToHighResolution();
+      
+      // Add vol to iterative volume list
+      vols.Add(s0.Volume);
 
       // Create copy of s0 and store as pre
       var sPre = ss.AddStructure("CONTROL", sRotEnv);
@@ -204,15 +216,30 @@ namespace VarianTools
       // random number generator is declared here and passed to sampling function to avoid potential deterministic effects of redclaring generator for each sample
       Random rn_gen = new Random();
 
-      for (int i = 0; i < n; i++)
+      // Get max set of EulerAngles
+      var ea_max_list = Euler.RandomGenerator.GetMaxEulerAngles(ea);
+
+      //for (int i = 0; i < n; i++)
+      int n = 0;
+
+      while(!VolumeIncreaseStangnant(vols))
       {
         // Get Original Mesh
         var sXm = new Structures.XMesh(s0.MeshGeometry);
 
         // Get random angles
-        var rea = Euler.RandomGenerator.SampleEulerAngles(rn_gen,ea);
+        //General.CMsg(msgpre + "sampling euler angles");
+        EulerAngles rea;
+        if (n < ea_max_list.Count)
+        {
+          //General.CMsg("stnd euler: " + n.ToString());
+          rea = ea_max_list[n];
+        }
+        else
+          rea = Euler.RandomGenerator.SampleEulerAngles(rn_gen, ea);
 
         // Rotate Mesh 
+        //General.CMsg(msgpre + "rotating mesh");
         sXm.RotateMeshPoints(rea,p);
 
         // Create contour from rotated mesh - search for unique name - it seems 
@@ -220,25 +247,62 @@ namespace VarianTools
         if (StructureExists(ss, sRotId))
           DeleteStructure(ss, sRotId);
         var sRot = ss.AddStructure("CONTROL", sRotId);
+        //General.CMsg(msgpre + "extracting contour from mesh");
         Structures.StructureFromXmesh(img, sXm, sRot);
+        if (!sRot.IsHighResolution && sRot.CanConvertToHighResolution())
+          sRot.ConvertToHighResolution();
 
         // add rotated structure to composite structure
         string sPstId = General.AppendConstrianedString(s0.Id, "P" + n.ToString(), General.EclipseStringType.StructureId);
         if (StructureExists(ss, sPstId))
           DeleteStructure(ss, sPstId);
         var sPst = ss.AddStructure("CONTROL", sPstId);
+        //General.CMsg(msgpre + "adding contour to composite");
+
+        if (!sPre.IsHighResolution && sPre.CanConvertToHighResolution())
+          sPre.ConvertToHighResolution();
+        if (!sPre.IsHighResolution || !sRot.IsHighResolution)
+          General.CMsg("Resolution Mismatch: " + sPre.Id + ":" + sPre.IsHighResolution.ToString() + "  " + sRot.Id + ":" + sRot.IsHighResolution.ToString());
         sPst.SegmentVolume = sPre.Or(sRot);
-        
+        if (!sPst.IsHighResolution && sPst.CanConvertToHighResolution())
+          sPst.ConvertToHighResolution();
+
         // set pre to post, remove pre and rot 
         sPre.SegmentVolume = sPst.SegmentVolume;
+        vols.Add(sPre.Volume);
         ss.RemoveStructure(sRot);
         ss.RemoveStructure(sPst);
+        n++;
       }
-        
-
-
-
+      return vols;
     }
+
+    private static bool VolumeIncreaseStangnant(List<double> volumes)
+    {
+      
+      int n = 200;
+      int c = volumes.Count;
+      //General.CMsg(c.ToString());
+      if (c > 30)
+        return true;
+      else
+        return false;
+      
+      /*
+      if (c > n)
+      {
+        var b = volumes.Last();
+        var a = volumes[c - n];
+        if (a > 0.0 && b/a < 1.0001)
+          return true;
+        else
+          return false;
+      }
+      else
+        return false;
+        */
+    }
+  
   }
 
 }
