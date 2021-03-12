@@ -19,7 +19,10 @@ namespace VarianTools
 
   public static partial class Eclipse
   {
-
+    public static void GitHubTransferTest()
+    {
+      return;
+    }
     public static bool PatientLoaded(ScriptContext context)
     {
       try
