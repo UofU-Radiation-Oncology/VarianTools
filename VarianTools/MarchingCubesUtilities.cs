@@ -13,7 +13,13 @@ namespace VarianTools
   {
     public partial class XMesh
     {
-
+      /// <summary>
+      /// Looks for triangles that are intersected by z and contain p1 but don't contain p0 (ie the next potential triangles in marching cube algorithm)
+      /// </summary>
+      /// <param name="p0">intersection point 0</param>
+      /// <param name="p1">intersection point 1</param>
+      /// <param name="z"></param>
+      /// <returns></returns>
       public List<int> GetNextTriangles(VVector p0, VVector p1, double z)
       {
         List<int> nextTriangles = new List<int>();
@@ -31,6 +37,7 @@ namespace VarianTools
               nextTriangles.Add(i);
             if (r == TriangleIntersection.PointEdge)
               nextTriangles.Add(i);
+           
           }
 
         }

@@ -49,12 +49,23 @@ namespace VarianTools
 
       DVHPoint[] hist = dvh.CurveData;
       int index = (int)(hist.Length * d.Dose / dvh.MaxDose.Dose);
-      if (index < 0 || index > hist.Length)
+      if (index < 0 )
         return double.NaN;
+      if (index > hist.Length)
+        return 0.0;
       else
         return hist[index].Volume;
     }
 
+    public static DoseValue StructureMaxDose(PlanningItem p, Structure s)
+    {
+      double binWidth = 0.1;
+      DVHData dvh = p.GetDVHCumulativeData(s, DoseValuePresentation.Absolute, VolumePresentation.AbsoluteCm3, binWidth);
+      if (dvh != null)
+        return dvh.MaxDose;
+      else
+        return DoseValue.Undefined;
+    }
 
 
     /// <summary>

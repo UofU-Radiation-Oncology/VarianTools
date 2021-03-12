@@ -46,7 +46,7 @@
     
     mimetype: application/x-microsoft.net.object.binary.base64
     value   : The object must be serialized with 
-            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : System.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
     
     mimetype: application/x-microsoft.net.object.soap.base64
@@ -60,7 +60,6 @@
             : and then encoded with base64 encoding.
     -->
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
@@ -69,17 +68,12 @@
               <xsd:sequence>
                 <xsd:element name="value" type="xsd:string" minOccurs="0" />
               </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
               <xsd:attribute name="type" type="xsd:string" />
               <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
             </xsd:complexType>
           </xsd:element>
-          <xsd:element name="
-                       
-
-
-">
+          <xsd:element name="assembly">
             <xsd:complexType>
               <xsd:attribute name="alias" type="xsd:string" />
               <xsd:attribute name="name" type="xsd:string" />
@@ -91,10 +85,9 @@
                 <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
                 <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
               <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
               <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
@@ -116,28 +109,9 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="pictureBox1.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABMAAAASCAIAAAA2bnI+AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADr0AAA69AUf7kK0AAALbSURBVDhPndNrSFNhGMDx00WJLPFTmnTTFnPOIYK3DCGj
-        tJ1ddE6Pti3LmsqQKFLJvDSGTtNp287cdM5lM3VqzQtOK3WpZZppamZlOlQ0jSAQor5EZc84ZsOPwp/z
-        Yef97byH9zlIlfn11lqXCL1sG0ND5M64cygSD4orDuGVkmNUB9GinagSQlA1BAtgsZ3896tjlI4qqI7I
-        7M7WjUkMU/HSgSDhfSdOBcgdrIrtzHKbRNU2ou8Yg3Yz5HvZeAgmjUytVJVbUHb6MVocxY9/OaW01TxD
-        F1V5o7n7MfU+Lk5IIMjdznHIhaM+KmwQSc2MFA2ZyqHQuCBtmMY9QkKLGq0RKZWU5Dq32DJid0CQ6kcT
-        UHC8LEn6WKlsp1JZhFmXFD7kQz5jahi8IjGewnKcuToHFAeCGJ5MQuHJWkXrEjAaLdJeennxqNTzIQHc
-        ksI6TdNEqrhuD0cLEghS0/UWungNNw+seHhw4Qn20t+XFR52IUOY1FBesfLSNN6mOX5Jf/hsHhCktucd
-        dE4kM1nmSSRskwwNxhIFWU3ayi/TH39a+2ctNdHZnQEJWiBI/dMPUCBPmWecI5PpG7uFv4Ctxp7GZFkl
-        k6+erf36vvZt6f1AB/9GfWC0BAhi7J2GaJzbsTdbxWLDJsmj83GJavXzvE2uLvQ1V2PXDSCBII39MxAc
-        JpyKXDccEHYVMOFJPhg7lJ2flv97tvuPtWdqaFSvUAem1rix8oEgD55bISemAo40OqGkAO8rLGz09mYe
-        ILHdPZlCrnCka2Teon/TIgcmzcz1FepcmXlAENOLOYgYvV0staugFk1rvmVcbBr8YbB8zVD2pSt64d0S
-        cx+SEu+5xqgcGLgLpreRlqEFiJCODBWclSejgBojPymQnYgrYIkq/KPEfqwcuDoziiGQMMM20ja8CBFy
-        I2LEYPqJWbe/Rdy1kfaRTxB8OMTqTdl/X/+jl9mIeXR5K40u/wXCTegFCWCSKgAAAABJRU5ErkJggg==
-</value>
-  </data>
 </root>

@@ -15,7 +15,6 @@ namespace VarianTools
 
     public static double ImgPlaneToZDicom(Image img, int ip)
     {
-    
       if (img.ImagingOrientation != PatientOrientation.HeadFirstSupine)
       {
         string msg = "Warning: ImgPlaneToZDicom has not been validated for orientations other than HFS";

@@ -291,7 +291,7 @@ namespace VarianTools
             string msg = "Warning: > 2 triangles located in mesh that contain p1 and intersect plane z (excluding previously encountered triangle).";
             msg += "\nAs only two triangles can share an edge, this likely indicates an error in the alorgirthm or mesh ";
             //MessageBox.Show(msg, "Marching Cubes Algorithm Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            General.CMsg(msg);
+            //General.CMsg(msg);
           }
 
           int c = 0;
@@ -358,7 +358,7 @@ namespace VarianTools
                 msg += General.VVectorMessage(Points[mt.PointIndices[2]]);
               }
 
-              General.CMsg(msg);
+              //General.CMsg(msg);
             }
             c++;
           }

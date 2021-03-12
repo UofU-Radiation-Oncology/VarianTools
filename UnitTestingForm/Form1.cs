@@ -309,6 +309,16 @@ namespace UnitTestingForm
       }*/
     }
 
+    public void TestRotationalConfig()
+    {
+      Structures.RotationalEnvelopeConfig rc = new Structures.RotationalEnvelopeConfig();
+      MessageBox.Show(rc.ToString());
+
+      rc.nBinomial = 100;
+      MessageBox.Show("\n" + rc.ToString());
+      rc.useExtrema = false;
+      MessageBox.Show("\n" + rc.ToString()); 
+    }
     public void TestAppendConstrainedSTring()
     {
       string tst = "TestStringLength";
@@ -323,8 +333,9 @@ namespace UnitTestingForm
       //MarchingCubesHandlesCoincidencesAndFacesTest();
       //TriangleContainsPointTesting();
       //PointOnEdgeTesting();
-      TestAppendConstrainedSTring();
+      //TestAppendConstrainedSTring();
       //TestRandomNumberGenerator();
+      TestRotationalConfig();
     }
 
     

@@ -20,6 +20,30 @@ namespace VarianTools
   public static partial class Eclipse
   {
 
+    public static bool PatientLoaded(ScriptContext context)
+    {
+      try
+      {
+        var p = context.Patient;
+        return true;
+      }
+      catch
+      {
+        return false;
+      }
+    }
+    public static bool PrescriptionValid(ExternalPlanSetup eps)
+    {
+      var rxPerFx = eps.DosePerFraction.Dose;
+      var nFx = eps.NumberOfFractions;
+      var rxTotal = eps.TotalDose.Dose;
+
+      if (rxPerFx != Double.NaN && nFx != null && rxTotal != Double.NaN)
+        return true;
+      else
+        return false;
+    }
+
     /// <summary>
     /// returns the currently selected plan or plansum.  If currently selected item is a plansum and multiple plansums exist prompt user for plan sum to use
     /// </summary>
@@ -108,6 +132,8 @@ namespace VarianTools
       }
     }
 
+
+   
     /// <summary>
     /// 
     /// </summary>
@@ -228,6 +254,26 @@ namespace VarianTools
       return nb;
     }
 
+    public static bool BeamExists(ExternalPlanSetup plan, string bId)
+    {
+      bool result = false;
+      foreach (var beam in plan.Beams)
+        if (beam.Id == bId)
+          result = true;
+
+      return result;
+    }
+
+    public static Beam GetBeam(ExternalPlanSetup plan, string bId)
+    {
+      Beam result = null;
+      foreach (var beam in plan.Beams)
+        if (beam.Id == bId)
+          result = beam;
+      return result; 
+    }
+
+    
     public static General.EclipseBeamType BeamType(Beam beam)
     {
       // --  Determine existing beam type and create new beam  -- // 
@@ -290,6 +336,8 @@ namespace VarianTools
       }
 
     }
+
+
 
     /// <summary>
     /// Deserializes an xml file into an object list

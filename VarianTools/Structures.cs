@@ -11,7 +11,7 @@ namespace VarianTools
 {
   public static partial class Structures
   {
-    
+
 
     public static bool StructureExists(StructureSet ss, string sId)
     {
@@ -132,6 +132,185 @@ namespace VarianTools
         s.ConvertToHighResolution();
     }
 
+    public static void HRAndDefault(StructureSet ss, Structure s0, Structure s1)
+    {
+      if (s0.IsHighResolution && !s1.IsHighResolution)
+      {
+        var s1HR = ss.AddStructure("CONTROL", "s1HRTemp");
+        s1HR.SegmentVolume = s1.SegmentVolume;
+        if (s1HR.CanConvertToHighResolution())
+        {
+          s1HR.ConvertToHighResolution();
+          s0.SegmentVolume = s0.And(s1HR);
+          DeleteStructure(ss, s1HR.Id);
+        }
+        else
+        {
+          DeleteStructure(ss, s1HR.Id);
+          MessageBox.Show("Boolean And could not be completed\nStructure could not be converted to high resoulution to match primary structure", "Boolean Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+      }
+
+    }
+
+    /// <summary>
+    /// Adds a structure to structure set ss (if the structure already exists then it overwrites it)
+    /// </summary>
+    /// <param name="ss"></param>
+    /// <param name="dType"></param>
+    /// <param name="sId"></param>
+    /// <returns></returns>
+    public static Structure ADDStructure(StructureSet ss, string dType, string sId)
+    {
+      if (StructureExists(ss, sId))
+        DeleteStructure(ss, sId);
+      return ss.AddStructure(dType, sId);
+    }
+
+    /// <summary>
+    /// returns a segment volume that is the result of a boolean And operation despite differences in structure resolution e.g. high vs default accuracy
+    /// a temporary high resolution structure is created for the operation and subsequently deleted. 
+    /// </summary>
+    /// <param name="ss"></param>
+    /// <param name="s0"></param>
+    /// <param name="s1"></param>
+    /// <returns></returns>
+    public static SegmentVolume BooleanAnd(StructureSet ss, Structure s0, Structure s1)
+    {
+      if ((s0.IsHighResolution && !s1.IsHighResolution) || (!s0.IsHighResolution && s1.IsHighResolution))
+      {
+        // Create temp HR structure and return segment volume
+        if (!s0.IsHighResolution)
+        {
+          var s0HR = ss.AddStructure("CONTROL", "s0_HR_TEMP");
+          s0HR.SegmentVolume = s0.SegmentVolume;
+          s0HR.ConvertToHighResolution();
+          var sv = s0HR.And(s1.SegmentVolume);
+          Structures.DeleteStructure(ss, s0HR.Id);
+          return sv;
+        }
+        else
+        {
+          var s1HR = ss.AddStructure("CONTROL", "s1_HR_TEMP");
+          s1HR.SegmentVolume = s1.SegmentVolume;
+          s1HR.ConvertToHighResolution();
+          var sv = s0.And(s1HR.SegmentVolume);
+          Structures.DeleteStructure(ss, s1HR.Id);
+          return sv;
+        }
+      }
+      else
+        return s0.And(s1.SegmentVolume);
+    }
+
+    public static SegmentVolume BooleanOr(StructureSet ss, Structure s0, Structure s1)
+    {
+      if ((s0.IsHighResolution && !s1.IsHighResolution) || (!s0.IsHighResolution && s1.IsHighResolution))
+      {
+        // Create temp HR structure and return segment volume
+        if (!s0.IsHighResolution)
+        {
+          var s0HR = ss.AddStructure("CONTROL", "s0_HR_TEMP");
+          s0HR.SegmentVolume = s0.SegmentVolume;
+          s0HR.ConvertToHighResolution();
+          var sv = s0HR.Or(s1.SegmentVolume);
+          Structures.DeleteStructure(ss, s0HR.Id);
+          return sv;
+        }
+        else
+        {
+          var s1HR = ss.AddStructure("CONTROL", "s1_HR_TEMP");
+          s1HR.SegmentVolume = s1.SegmentVolume;
+          s1HR.ConvertToHighResolution();
+          var sv = s0.Or(s1HR.SegmentVolume);
+          Structures.DeleteStructure(ss, s1HR.Id);
+          return sv;
+        }
+      }
+      else
+        return s0.Or(s1.SegmentVolume);
+    }
+
+    public static SegmentVolume BooleanSub(StructureSet ss, Structure s0, Structure s1)
+    {
+      if ((s0.IsHighResolution && !s1.IsHighResolution) || (!s0.IsHighResolution && s1.IsHighResolution))
+      {
+        // Create temp HR structure and return segment volume
+        if (!s0.IsHighResolution)
+        {
+          var s0HR = ss.AddStructure("CONTROL", "s0_HR_TEMP");
+          s0HR.SegmentVolume = s0.SegmentVolume;
+          s0HR.ConvertToHighResolution();
+          var sv = s0HR.Sub(s1.SegmentVolume);
+          Structures.DeleteStructure(ss, s0HR.Id);
+          return sv;
+        }
+        else
+        {
+          var s1HR = ss.AddStructure("CONTROL", "s1_HR_TEMP");
+          s1HR.SegmentVolume = s1.SegmentVolume;
+          s1HR.ConvertToHighResolution();
+          var sv = s0.Sub(s1HR.SegmentVolume);
+          Structures.DeleteStructure(ss, s1HR.Id);
+          return sv;
+        }
+      }
+      else
+        return s0.Sub(s1.SegmentVolume);
+
+
+    }
+
+    /// <summary>
+    ///  returns the hausdorf distance in mm between two surfaces defined as the maximum value and adversary would be reguired to travel from surface 2 to surface 1
+    /// </summary>
+    /// <param name="s1"></param>
+    /// <param name="s2"></param>
+    /// <returns></returns>
+    public static double HausdorfDistance(StructureSet ss, Structure s1, Structure s2)
+    {
+
+      var s2Points = GetContourPositions(ss, s2);
+      var s1Points = GetContourPositions(ss, s1);
+
+      double hd = 0.0;
+      foreach (var s2P in s2Points)
+      {
+        double md = 9999999.0;
+        foreach (var s1P in s1Points)
+        {
+          var x = s2P.x - s1P.x;
+          var y = s2P.y - s1P.y;
+          var z = s2P.z - s1P.z;
+          var r = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2) + Math.Pow(z, 2));
+          // find min distance between s2P and surface s1
+          if (r < md)
+            md = r;
+        }
+        if (md > hd)
+          hd = md;
+      }
+      return hd;
+    }
+
+    /// <summary>
+    /// returns a PointCollection with 3D positions of all points in contour
+    /// </summary>
+    /// <param name="s"></param>
+    /// <returns></returns>
+    public static List<VVector> GetContourPositions(StructureSet ss, Structure s)
+    {
+      List<VVector> points = new List<VVector>();
+
+      for (int i = 0; i < ss.Image.ZSize; i++)
+      {
+        var contours = s.GetContoursOnImagePlane(i);
+        for (int j = 0; j < contours.Length; j++)
+          foreach (var p in contours[j])
+            points.Add(p);
+      }
+      return points;      
+    }
 
     public static void StructureFromXmesh(Image img, XMesh xm, Structure s)
     {
@@ -157,14 +336,25 @@ namespace VarianTools
       {
         var zDicom = Images.ImgPlaneToZDicom(img, i);
         //MessageBox.Show(zDicom.ToString());
-        var contour = xm.MarchingCubeAlgorithmSingleSegment(zDicom);
-        //var contour = xm.MarchingCubeAlgorithm(zDicom);
-
-        if (contour != null)
+        try
         {
-          //MessageBox.Show("index: " + i.ToString() + "\nContour length: " + contour.Length.ToString());
-          foreach (var segment in contour)
-            s.AddContourOnImagePlane(segment, i);
+          var contour = xm.MarchingCubeAlgorithmSingleSegment(zDicom);
+          //var contour = xm.MarchingCubeAlgorithm(zDicom);
+          if (contour != null)
+          {
+            //MessageBox.Show("index: " + i.ToString() + "\nContour length: " + contour.Length.ToString());
+            foreach (var segment in contour)
+              s.AddContourOnImagePlane(segment, i);
+          }
+        }
+        catch(Exception exc)
+        {
+          General.CMsg("\t**Marching cubes algorithm failed for i: " + i.ToString());
+          //var path = (@"C:\Temp\" + s.Id + "_Z" + zDicom.ToString().Replace(".","_") +".msh").Replace("-","_");
+          //General.CMsg("STRUCTURE FROM XMESH ERROR: " + exc.Message + "\nTrace: " + exc.StackTrace);
+          //General.CMsg("Writing XMesh to file: "+ path);
+          //General.SaveObject<XMesh>(xm, path);
+    
         }
       }
 
@@ -185,6 +375,95 @@ namespace VarianTools
 
     }
 
+    public class RotationalEnvelopeConfig
+    {
+      
+      // Private members 
+      private int _n;          // number of hardcoded iterations
+      private bool _binomial;  // use binomial cuttof?
+      private int _nbin;    // number of binomial iterations without observing a change
+      private bool _extrema;   // use extrema set?
+
+      // Publics members
+      
+      // number of hardcoded iterations
+      public int n    
+      {
+        get { return _n; }
+        set { _n = value; _nbin = 0; _binomial = false; }
+      }
+            
+      // number of iterations observed without change
+      public int nBinomial
+      { 
+        get {return _nbin;}
+        set { _nbin = value; _n = 0; _binomial = true; }
+      }
+            
+      // bool - binomial cutoff being used
+      public bool useBinomialCutoff
+      { 
+        get { return _binomial; }
+      }
+      
+      // bool - numerical cutoff being used
+      public bool useNumericalCutoff
+      { 
+        get { return !_binomial; }
+      }
+
+
+      // bool - use set of standard Euler angles for making convergance more efficient
+      public bool useExtrema
+      {
+        get { return _extrema; }
+        set { _extrema = value; }
+      }
+
+      // bool - fully random vs using standard Euler angle set. 
+      public bool fullyRandom
+      {
+        get { return !_extrema; }
+        set { _extrema = !value; }
+      }
+
+      /// <summary>
+      /// Sets a default configuration for Envelope generation
+      /// </summary>
+      public RotationalEnvelopeConfig()
+      {
+        n = 27;
+        useExtrema = true;
+      }
+
+      public void SetNBinomial(double coverage, double undersample_probability)
+      {
+        var c = coverage;
+        var usp = undersample_probability;
+        double n = Math.Log(usp) / Math.Log(c);
+        nBinomial = (int)Math.Ceiling(n);
+      }
+
+
+      public override string ToString()
+      {
+        string msg = "n: " + n.ToString();
+        msg += "\nnBinomial: " + nBinomial.ToString();
+        msg += "\nuseBinomialCutoff: " + useBinomialCutoff.ToString();
+        msg += "\nuseNuericalCutoff: " + useNumericalCutoff.ToString();
+        msg += "\nuseExtrema: " + useExtrema.ToString();
+        msg += "\nfullyRandom: " + fullyRandom.ToString();
+        return msg;
+      }
+
+      public int GetN()
+      {
+        if (useBinomialCutoff)
+          return nBinomial;
+        else
+          return n;
+      }
+    }
 
     /// <summary>
     /// Genrates a rotational envelope that encompases all potential rotations of struture s given a magnitude and convention of rotation specified by ea
@@ -194,7 +473,8 @@ namespace VarianTools
     /// <param name="p">point around which rotation occurs</param>
     /// <param name="ea">Euler convention and magnitude of rotations</param>
     /// /// <param name="i">number of iterations in brute force approach</param>
-    public static List<double> GenerateRotationalEnvelope(Image img, StructureSet ss, Structure s0, string sRotEnv, VVector p, EulerAngles ea)
+    public static List<double> GenerateRotationalEnvelope(Image img, StructureSet ss, Structure s0, string sRotEnv, VVector p, EulerAngles ea, RotationalEnvelopeConfig rec)
+
     {
 
       //var msgpre = "VARIANTOOLS.STRUCTURES.GENERATEROTATIONALENVELOPE: "; // prefix used in console messages
@@ -217,12 +497,15 @@ namespace VarianTools
       Random rn_gen = new Random();
 
       // Get max set of EulerAngles
-      var ea_max_list = Euler.RandomGenerator.GetMaxEulerAngles(ea);
+      List<EulerAngles> ea_max_list = new List<EulerAngles>();
+      if(rec.useExtrema)
+        ea_max_list = Euler.RandomGenerator.GetMaxEulerAngles(ea);
 
       //for (int i = 0; i < n; i++)
       int n = 0;
 
-      while(!VolumeIncreaseStangnant(vols))
+      //while(!VolumeIncreaseStangnant(vols))
+      while(!StopCriteriaMet(rec,vols))
       {
         // Get Original Mesh
         var sXm = new Structures.XMesh(s0.MeshGeometry);
@@ -248,7 +531,9 @@ namespace VarianTools
           DeleteStructure(ss, sRotId);
         var sRot = ss.AddStructure("CONTROL", sRotId);
         //General.CMsg(msgpre + "extracting contour from mesh");
-        Structures.StructureFromXmesh(img, sXm, sRot);
+
+        Structures.StructureFromXmesh(img, sXm, sRot); 
+                
         if (!sRot.IsHighResolution && sRot.CanConvertToHighResolution())
           sRot.ConvertToHighResolution();
 
@@ -277,13 +562,53 @@ namespace VarianTools
       return vols;
     }
 
+    private static bool StopCriteriaMet(RotationalEnvelopeConfig rec, List<double> volumes)
+    {
+      if (rec.useNumericalCutoff && volumes.Count < rec.n)
+        return false;
+      if (rec.useBinomialCutoff)
+      {
+        if (volumes.Count <= rec.nBinomial  || (volumes.Count <= 27 && rec.useExtrema))
+          return false;
+        else
+        {
+          bool icheck = true;
+          for (int i = volumes.Count - rec.nBinomial; i < volumes.Count; i++)
+            if (VolumeChanged(volumes[i-1],volumes[i]))
+              icheck = false;
+          return icheck;
+        }
+      }
+      
+      return false;
+    }
+
+    private static bool VolumeChanged(double a, double b)
+    {
+      ///For a 4mm spherical lesion a change in 0.001cc corresponds to a 0.05mm change in diameter.  As size of lesion increases,
+      ///the change of diameter decreases for a given change in volume. 
+      double delta = 0.001; 
+      double up = a + delta;
+      double low = a - delta;
+      
+      if (b <= up && b >= low)
+        return false;
+      else
+        return true;
+    }
+    
+    /// <summary>
+    /// Deprecated
+    /// </summary>
+    /// <param name="volumes"></param>
+    /// <returns></returns>
     private static bool VolumeIncreaseStangnant(List<double> volumes)
     {
-      
-      int n = 200;
+      int n = 100;
       int c = volumes.Count;
       //General.CMsg(c.ToString());
-      if (c > 30)
+      
+      if (c > 100)
         return true;
       else
         return false;
@@ -293,7 +618,7 @@ namespace VarianTools
       {
         var b = volumes.Last();
         var a = volumes[c - n];
-        if (a > 0.0 && b/a < 1.0001)
+        if (a > 0.0 && b/a < 1.001)
           return true;
         else
           return false;

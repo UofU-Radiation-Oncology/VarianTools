@@ -15,6 +15,7 @@ namespace VarianTools
     /// Container class for MeshGeometry 3D that adds a methods and attributes for rotating meshes and extracting contours. 
     /// 
     /// </summary>
+    [Serializable]
     public partial class XMesh
     {
       public XMesh(MeshGeometry3D m)

@@ -10,6 +10,7 @@ namespace VarianTools
 {
   public static partial class Structures
   {
+    [Serializable]
     public class MeshTriangle
     {
       /// <summary>

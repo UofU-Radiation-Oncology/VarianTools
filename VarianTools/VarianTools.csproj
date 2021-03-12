@@ -119,6 +119,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Beams.cs" />
     <Compile Include="DICOM.cs" />
     <Compile Include="DVH.cs" />
     <Compile Include="Images.cs" />
