@@ -130,9 +130,7 @@ namespace VarianTools
           return null;
 
       } // public VVector[][] MarchingCubeAlgorithm(double z)
-
-
-
+      
       public VVector[][] MarchingCubeAlgorithmMultiSegmentTesting(double z)
       {
 

@@ -105,6 +105,19 @@ namespace VarianTools
         return null;
     }
 
+    public static List<Structure> MultiStructureSelectDialog(StructureSet ss)
+    {
+      List<Structure> structures = new List<Structure>();
+      
+      MultiContourSelect mcs = new MultiContourSelect(ss);
+      if (mcs.ShowDialog() == DialogResult.OK)
+      {
+        foreach (var item in mcs.ItemListBox.Items)
+          structures.Add(ss.Structures.FirstOrDefault(s => s.Id == (string)item));
+      
+      }
+      return structures;
+    }
     public static int StructureCount(StructureSet ss)
     {
       int count = 0;
@@ -261,22 +274,68 @@ namespace VarianTools
 
     }
 
+    public enum HausdorfSampling
+    { 
+      Mesh,
+      Contours,
+      Original,
+      OriginalAndContours,
+
+    }
+
+
     /// <summary>
     ///  returns the hausdorf distance in mm between two surfaces defined as the maximum value and adversary would be reguired to travel from surface 2 to surface 1
     /// </summary>
     /// <param name="s1"></param>
     /// <param name="s2"></param>
     /// <returns></returns>
-    public static double HausdorfDistance(StructureSet ss, Structure s1, Structure s2)
+    public static Tuple<double, VVector, VVector> HausdorfDistance(StructureSet ss, Structure s1, Structure s2, HausdorfSampling resample, double resolution)
     {
+      List<VVector> s2Points = new List<VVector>();
+      List<VVector> s1Points = new List<VVector>();
 
-      var s2Points = GetContourPositions(ss, s2);
-      var s1Points = GetContourPositions(ss, s1);
+      if (resample == HausdorfSampling.Mesh)
+      {
+        Structures.XMesh s1xm = new Structures.XMesh(s1.MeshGeometry);
+        Structures.XMesh s2xm = new Structures.XMesh(s2.MeshGeometry);
+
+        s2Points = s2xm.VerticiesToDensePointCloud(resolution);
+        s1Points = s1xm.VerticiesToDensePointCloud(resolution);
+      }
+      else if (resample == HausdorfSampling.Contours)
+      {
+        General.CMsg("\tContour based sampling");
+        s2Points = GetContourPositionsResample(ss, s2, resolution);
+        //s2Points = GetContourPositions(ss, s2);
+        s1Points = GetContourPositionsResample(ss, s1, resolution);
+        General.CMsg("\tContour based sampling\n\tn s1: " + s1Points.Count.ToString() + "\n\tn s2: " + s2Points.Count.ToString());
+      }
+      else if (resample == HausdorfSampling.OriginalAndContours)
+      {
+        General.CMsg("\tContour and original based sampling");
+        s2Points = GetContourPositionsResample(ss, s2, resolution);
+        s2Points.Union(GetContourPositions(ss, s2));
+        s1Points = GetContourPositionsResample(ss, s1, resolution);
+        s1Points.Union(GetContourPositions(ss, s1));
+        General.CMsg("\tContour and original based sampling\n\tn s1: " + s1Points.Count.ToString() + "\n\tn s2: " + s2Points.Count.ToString());
+      }
+      else
+      {
+        s2Points = GetContourPositions(ss, s2);
+        s1Points = GetContourPositions(ss, s1);
+      }
+
+      VVector hs1 = new VVector();
+      VVector hs2 = new VVector();
 
       double hd = 0.0;
       foreach (var s2P in s2Points)
       {
         double md = 9999999.0;
+        VVector md_hs1 = new VVector();
+        VVector md_hs2 = new VVector();
+
         foreach (var s1P in s1Points)
         {
           var x = s2P.x - s1P.x;
@@ -285,13 +344,29 @@ namespace VarianTools
           var r = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2) + Math.Pow(z, 2));
           // find min distance between s2P and surface s1
           if (r < md)
+          {
             md = r;
+            md_hs1.x = s1P.x;
+            md_hs1.y = s1P.y;
+            md_hs1.z = s1P.z;
+            md_hs2.x = s2P.x;
+            md_hs2.y = s2P.y;
+            md_hs2.z = s2P.z;
+          }
         }
         if (md > hd)
+        {
           hd = md;
+          hs1 = md_hs1;
+          hs2 = md_hs2;
+          
+        }
       }
-      return hd;
+      //MessageBox.Show("s1P: " + hs1.x.ToString() + " " + hs1.y.ToString() + " " + hs1.z.ToString() + "\ns2P: " + hs2.x.ToString() + " " + hs2.y.ToString() + " " + hs2.z.ToString());
+      return Tuple.Create(hd, hs1, hs2);
     }
+
+
 
     /// <summary>
     /// returns a PointCollection with 3D positions of all points in contour
@@ -301,7 +376,7 @@ namespace VarianTools
     public static List<VVector> GetContourPositions(StructureSet ss, Structure s)
     {
       List<VVector> points = new List<VVector>();
-
+      General.CMsg("\tGetContourPositions: " + s.Id);
       for (int i = 0; i < ss.Image.ZSize; i++)
       {
         var contours = s.GetContoursOnImagePlane(i);
@@ -311,6 +386,194 @@ namespace VarianTools
       }
       return points;      
     }
+
+    public static List<VVector> GetContourPositionsResample(StructureSet ss, Structure s, double resolution)
+    {
+      General.CMsg("\tGetContourPositionsResample: " + s.Id);
+      List<VVector> points = new List<VVector>();
+      //List<List<VVector>> psort = new List<List<VVector>>();
+      var extents = StructureImgIndexExtents(ss.Image, s);
+      var i1 = extents.Item1;
+      var i2 = extents.Item2;
+      General.CMsg("\tfirst image: " + i1.ToString());
+      General.CMsg("\tlast image: " + i2.ToString());
+
+      int ie = 99999;
+      int je = 99999;
+      int ke = 99999;
+      try
+      {
+        for (int i = 0; i < ss.Image.ZSize; i++)
+        {
+          ie = i;
+          var contours = s.GetContoursOnImagePlane(i);
+          //General.CMsg("Image plane: " + i.ToString());
+          for (int j = 0; j < contours.Length; j++)
+          {
+            je = j;
+            List<VVector> cpoints = new List<VVector>();
+            for (int k = 0; k < contours[j].Length; k++)
+            {
+              ke = k;
+              if (k + 1 < contours[j].Length)
+              {
+                var a = contours[j][k];
+                var b = contours[j][k + 1];
+                cpoints.AddRange(InterpolateContourPoints(a, b, resolution));
+              }
+              else
+              {
+                var a = contours[j][k];
+                var b = contours[j][k + 1 - contours[j].Length];
+                cpoints.AddRange(InterpolateContourPoints(a, b, resolution));
+              }
+
+
+            }
+            if ((i == i1 || i == i2) && cpoints.Count > 0)
+              points.AddRange(FillContourSlice(cpoints, resolution));
+            else if ((i == i1 || i == i2) && cpoints.Count < 0)
+              General.CMsg("Warning: no contours detected on indicated first or last slice of contour");
+            else
+              if (cpoints.Count > 0)
+              points.AddRange(cpoints);
+          }
+        }
+      }
+      catch (Exception e)
+      {
+        var msg = "GetContourPositionsResample\n\timg slice: " + ie.ToString() + "(" + Images.ImgPlaneToZDicom(ss.Image, ie) + ")" + "\n\tj:  " + je.ToString() + "\n\tk: " + ke.ToString() + "\n\texception: " + e.Message;
+        General.CMsg(msg);
+      }
+      return points;
+    }
+
+    public static List<VVector> FillContourSlice(List<VVector> cs, double resolution)
+    {
+      List<VVector> points = new List<VVector>();
+      var c = CalculateCentroid(cs);
+      points.Add(c);
+      foreach (var p in cs)
+      {
+        points.AddRange(InterpolateContourPoints(p, c, resolution));
+      }
+      return points;
+    }
+
+    public static Tuple<int,int> StructureImgIndexExtents(Image img, Structure s)
+    {
+      List<VVector> points = new List<VVector>();
+      for (int i = 0; i < img.ZSize; i++)
+      {
+        var contours = s.GetContoursOnImagePlane(i);
+        for (int j = 0; j < contours.Length; j++)
+         for (int k = 0; k < contours[j].Length; k++)
+              points.Add(contours[j][k]);
+      }
+      return new Tuple<int, int>(Images.ZDicomToImgPlane(img, points.Min(p => p.z)), Images.ZDicomToImgPlane(img, points.Max(p => p.z)));
+    }
+
+
+    public static VVector CalculateCentroid(List<VVector> points)
+    {
+      VVector centroid = new VVector();
+
+      List<double> x = new List<double>();
+      List<double> y = new List<double>();
+      List<double> z = new List<double>();
+
+      // sum all coordinates
+      foreach (var p in points)
+      {
+        x.Add(p.x);
+        y.Add(p.y);
+        z.Add(p.z);
+      }
+
+      centroid.x = x.Average();
+      centroid.y = y.Average();
+      centroid.z = z.Average();
+
+      return centroid;
+    }
+    public static List<VVector> InterpolateContourPoints(VVector v0, VVector v1, double resolution)
+    {
+      List<VVector> points = new List<VVector>();
+      var AB = VectorSubtract(v1, v0);
+      var mag = VectorMagnitude(AB);
+      //General.CMsg("distance between points: " + mag.ToString());
+      if ( mag > resolution)
+      {
+        var n = Math.Floor(mag / resolution);
+        //General.CMsg("n: " + n.ToString());
+        for (int i = 0; i <= (int)n; i++)
+        {
+          var a = (double)i / (double)n;
+          //General.CMsg("a: " + a.ToString());
+          points.Add(VectorAdd(v0, ScaleVector(a, AB)));
+        }
+      }
+
+      return points;
+      
+    }
+
+    
+    /// <summary>
+    /// calculates the magnitued of vector r
+    /// </summary>
+    /// <param name="r">VVector</param>
+    /// <returns>double</returns>
+    public static double VectorMagnitude(VVector r)
+    {
+      return Math.Sqrt(Math.Pow(r.x, 2) + Math.Pow(r.y, 2) + Math.Pow(r.z, 2));
+    }
+
+    /// <summary>
+    /// Scales vector r by s
+    /// </summary>
+    /// <param name="s"></param>
+    /// <param name="r"></param>
+    /// <returns></returns>
+    public static VVector ScaleVector(double s, VVector A)
+    {
+      VVector sA = new VVector();
+      sA.x = A.x * s;
+      sA.y = A.y * s;
+      sA.z = A.z * s;
+      return sA;
+    }
+
+    /// <summary>
+    /// performs vector subtraction
+    /// </summary>
+    /// <param name="A"></param>
+    /// <param name="B"></param>
+    /// <returns></returns>
+    public static VVector VectorSubtract(VVector A, VVector B)
+    {
+      VVector Sub = new VVector();
+      Sub.x = A.x - B.x;
+      Sub.y = A.y - B.y;
+      Sub.z = A.z - B.z;
+      return Sub;
+    }
+
+    /// <summary>
+    /// performs vector addition
+    /// </summary>
+    /// <param name="A"></param>
+    /// <param name="B"></param>
+    /// <returns></returns>
+    public static VVector VectorAdd(VVector A, VVector B)
+    {
+      VVector Sum = new VVector();
+      Sum.x = A.x + B.x;
+      Sum.y = A.y + B.y;
+      Sum.z = A.z + B.z;
+      return Sum;
+    }
+
 
     public static void StructureFromXmesh(Image img, XMesh xm, Structure s)
     {
@@ -325,13 +588,14 @@ namespace VarianTools
       var maxIndex = Images.ZDicomToImgPlane(img, maxZ);
       var minIndex = Images.ZDicomToImgPlane(img, minZ);
 
-      /*string msg = "";
+      string msg = "";
       msg += "maxZ: " + maxZ.ToString();
       msg += "\nminZ: " + minZ.ToString();
       msg += "\nmaxIndex: " + maxIndex.ToString();
       msg += "\nminIndex: " + minIndex.ToString();
-      MessageBox.Show(msg);*/
-
+      //General.CMsg(msg);
+      //*/
+      int f = 0;
       for (int i = minIndex; i <= maxIndex; i++)
       {
         var zDicom = Images.ImgPlaneToZDicom(img, i);
@@ -350,11 +614,16 @@ namespace VarianTools
         catch(Exception exc)
         {
           General.CMsg("\t**Marching cubes algorithm failed for i: " + i.ToString());
+          General.CMsg(msg);
+          General.CMsg(exc.Message);
+          return;
+          //f++;
+          //General.CMsg("\tfailure: " + f.ToString());
+
           //var path = (@"C:\Temp\" + s.Id + "_Z" + zDicom.ToString().Replace(".","_") +".msh").Replace("-","_");
           //General.CMsg("STRUCTURE FROM XMESH ERROR: " + exc.Message + "\nTrace: " + exc.StackTrace);
           //General.CMsg("Writing XMesh to file: "+ path);
           //General.SaveObject<XMesh>(xm, path);
-    
         }
       }
 
@@ -472,11 +741,11 @@ namespace VarianTools
     /// <param name="s">structure used for generating rotational envelope</param>
     /// <param name="p">point around which rotation occurs</param>
     /// <param name="ea">Euler convention and magnitude of rotations</param>
-    /// /// <param name="i">number of iterations in brute force approach</param>
+    /// /// <param name="rec">configuration for generating envelope e.g. sampling threshold etc. </param>
     public static List<double> GenerateRotationalEnvelope(Image img, StructureSet ss, Structure s0, string sRotEnv, VVector p, EulerAngles ea, RotationalEnvelopeConfig rec)
-
     {
-
+      //General.CMsg("Generate rotational envelope config: \n" + rec.ToString());
+      //General.CMsg("Use numerical cutoff explicit: " + rec.useNumericalCutoff.ToString());
       //var msgpre = "VARIANTOOLS.STRUCTURES.GENERATEROTATIONALENVELOPE: "; // prefix used in console messages
       List<double> vols = new List<double>();
 
@@ -489,6 +758,10 @@ namespace VarianTools
       // Add vol to iterative volume list
       vols.Add(s0.Volume);
 
+      // if rotational envelop exists overwrite it
+      if (Structures.StructureExists(ss, sRotEnv))
+        Structures.DeleteStructure(ss, sRotEnv);
+      
       // Create copy of s0 and store as pre
       var sPre = ss.AddStructure("CONTROL", sRotEnv);
       sPre.SegmentVolume = s0.Margin(0.0);
@@ -505,8 +778,11 @@ namespace VarianTools
       int n = 0;
 
       //while(!VolumeIncreaseStangnant(vols))
+      //vols.Count.ToString()
       while(!StopCriteriaMet(rec,vols))
       {
+     
+        //General.CMsg("Rotational sample: " + n.ToString());
         // Get Original Mesh
         var sXm = new Structures.XMesh(s0.MeshGeometry);
 
@@ -564,8 +840,15 @@ namespace VarianTools
 
     private static bool StopCriteriaMet(RotationalEnvelopeConfig rec, List<double> volumes)
     {
-      if (rec.useNumericalCutoff && volumes.Count < rec.n)
-        return false;
+      //General.CMsg("Stop criteria check: ");
+      //General.CMsg("n: " + volumes.Count.ToString() + "  n cuttof: " + rec.n.ToString() + "  Use numerical cutoff: " + rec.useNumericalCutoff.ToString() );
+      if (rec.useNumericalCutoff)
+      {
+        if (volumes.Count-1 < rec.n)
+          return false;
+        else
+          return true;
+      }
       if (rec.useBinomialCutoff)
       {
         if (volumes.Count <= rec.nBinomial  || (volumes.Count <= 27 && rec.useExtrema))
