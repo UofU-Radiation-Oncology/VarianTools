@@ -67,6 +67,25 @@ namespace VarianTools
         return DoseValue.Undefined;
     }
 
+    public static DoseValue StructureMinDose(PlanningItem p, Structure s)
+    {
+      double binWidth = 0.1;
+      DVHData dvh = p.GetDVHCumulativeData(s, DoseValuePresentation.Absolute, VolumePresentation.AbsoluteCm3, binWidth);
+      if (dvh != null)
+        return dvh.MinDose;
+      else
+        return DoseValue.Undefined;
+    }
+
+    public static DoseValue StructureMeanDose(PlanningItem p, Structure s)
+    {
+      double binWidth = 0.1;
+      DVHData dvh = p.GetDVHCumulativeData(s, DoseValuePresentation.Absolute, VolumePresentation.AbsoluteCm3, binWidth);
+      if (dvh != null)
+        return dvh.MeanDose;
+      else
+        return DoseValue.Undefined;
+    }
 
     /// <summary>
     /// returns min dose recieved for a given volume (volume) 
