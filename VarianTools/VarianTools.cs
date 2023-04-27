@@ -340,7 +340,36 @@ namespace VarianTools
 
     }
 
+    public static void LoadStructureFromXml(StructureSet ss, string sID, string DICOMType, string fileName)
+    {
+      var s = ss.AddStructure(DICOMType, sID);
 
+      try
+      {
+        XmlDocument xmlDocument = new XmlDocument();
+        xmlDocument.Load(fileName);
+        string xmlString = xmlDocument.OuterXml;
+
+        using (StringReader read = new StringReader(xmlString))
+        {
+          Type outType = s.GetType();
+
+          XmlSerializer serializer = new XmlSerializer(outType);
+          using (XmlReader reader = new XmlTextReader(read))
+          {
+            s.ReadXml(reader);
+            reader.Close();
+          }
+
+          read.Close();
+        }
+      }
+      catch (Exception e)
+      {
+        //MessageBox.Show("Error Loading Object");
+        MessageBox.Show("Error Loading Structure\n" + e);
+      }
+    }
 
     /// <summary>
     /// Deserializes an xml file into an object list

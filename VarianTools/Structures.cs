@@ -600,8 +600,8 @@ namespace VarianTools
       {
         var zDicom = Images.ImgPlaneToZDicom(img, i);
         //MessageBox.Show(zDicom.ToString());
-        try
-        {
+        //try
+        //{
           var contour = xm.MarchingCubeAlgorithmSingleSegment(zDicom);
           //var contour = xm.MarchingCubeAlgorithm(zDicom);
           if (contour != null)
@@ -610,9 +610,9 @@ namespace VarianTools
             foreach (var segment in contour)
               s.AddContourOnImagePlane(segment, i);
           }
-        }
-        catch(Exception exc)
-        {
+        //}
+        //catch(Exception exc)
+        /*/{
           General.CMsg("\t**Marching cubes algorithm failed for i: " + i.ToString());
           General.CMsg(msg);
           General.CMsg(exc.Message);
@@ -624,7 +624,7 @@ namespace VarianTools
           //General.CMsg("STRUCTURE FROM XMESH ERROR: " + exc.Message + "\nTrace: " + exc.StackTrace);
           //General.CMsg("Writing XMesh to file: "+ path);
           //General.SaveObject<XMesh>(xm, path);
-        }
+        //}*/
       }
 
       //xm.MarchingCubeAlgorithm()
